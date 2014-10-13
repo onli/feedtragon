@@ -1,4 +1,4 @@
-*feedtragón* is a small self-hosted RSS-reader. Instead of polling feed on its own, it is using superfeedr to get updates of subscribed feeds.
+**feedtragón** is a small self-hosted RSS-reader. Instead of polling feeds on its own, it is using [superfeedr](https://superfeedr.com) to get updates of subscribed feeds.
 
 # Installation
 
