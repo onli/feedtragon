@@ -1,0 +1,36 @@
+<%# -*- encoding : utf-8 -*- %>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+        <title>First Use Installer</title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="stylesheet" href="<%= url_for '/main.css' %>">
+    </head>
+
+    <body>
+        <div id="content">
+            <h1>Installation</h1>
+            <% if ! authorized? %>
+                <h2>Step 1/2</h2>
+                <p>Please sign in: <%= render_login_button %></p>
+                <p>The mail address used will be marked as being admin.</p>
+            <% else %>
+                <h2>Step 2/2</h2>
+                <p>Server and superfeedr information (please create a free account <a href="https://superfeedr.com/subscriber">here</a>)
+                <form method="POST" action="/addSuperfeedr">
+                    <ul id="superfeedr">
+                        <li><label>hostname of this server: <input name="host" type="url" required placeholder="www.example.org"></input></label></li>
+                        <li><label>superfeedr name: <input name="name" type="text" required placeholder="user"></input></label></li>
+                        <li><label>superfeedr password (token): <input name="password" type="text" required placeholder=""2e4f8aadsdasd45ad4o41"></input></label></li>
+                    </ul>
+                    <button type="submit">OK</button>
+                </form>
+            <% end %>
+        </div>
+    </body>
+</html>

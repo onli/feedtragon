@@ -1,0 +1,54 @@
+<%# -*- encoding : utf-8 -*- %>
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+
+        <meta name="viewport" content="width=device-width">
+
+        <link rel="stylesheet" href="<%= url_for '/main.css' %>">
+        <title>Feedreader</title>
+        <meta name="description" content="">
+        <script src="<%= url_for '/visibility.js' %>" async></script>
+        <script src="<%= url_for '/main.js' %>" async></script>
+    </head>
+
+    <body>
+        <% if ! isAdmin? %>
+            <p>Please sign in: <%= render_login_button %></p>
+        <% else %>
+            <section id="feeds">
+                <ol id="feedList">
+                <% feeds.each do |feed| %>
+                    <% if ! feed.entries.nil? && feed.entries.size > 0 %>
+                        <li><a href="<%= url_for '/' + feed.id.to_s %>"><%= feed.name %></a></li>
+                    <% end %>
+                <% end %>
+                </ol>
+                <form id="subscribe" method="POST" action="<%= url_for '/subscribe' %>">
+                    <input type="url" name="url" placeholder="url"/>
+                    <button type="submit">Add</button>
+                </form>
+                <form id="import" method="POST" action="<%= url_for '/import' %>" enctype="multipart/form-data">
+                    <input type="file" name="file" /></label>
+                    <button type="submit">Send</button>
+                </form>
+            </section>
+
+            <% if entries %>
+                <main id="entries">
+                    <ol>
+                    <% entries.each do |entry| %>
+                        <li>
+                            <h2><a href="<%= entry.url %>"><%= entry.title %></a></h2>
+                            <div><%= entry.content %></div>
+                            <hr class="read" data-entryid="<%= entry.id %>"> </hr>
+                        </li>
+                    <% end %>
+                    </ol>
+                </main>
+            <% end %>
+        <% end %>  
+    </body>
+</html>

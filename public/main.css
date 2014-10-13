@@ -1,0 +1,62 @@
+/* generics */
+
+html {
+    font-family: ubuntu, helvetica, arial, sans-serif;
+    font-weight: 400;
+    background-color: #F7F7F7;
+    color: #333;
+}
+
+*, *:before, *:after {
+    -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+}
+
+a {
+    color: #3B5998;
+    text-decoration: none;
+}
+
+a:visited {
+    color: #8496bc;
+}
+
+input, textarea, button {
+    font-family: inherit;
+    font-size: inherit;
+}
+
+textarea {
+    /* textarea-borders else might differ from input-boxes in chrome */
+    -moz-appearance: textfield;
+    -webkit-appearance: textfield;
+}
+
+/* specifics */
+
+#feeds {
+    display: inline-block;
+    vertical-align: top;
+}
+
+#feedList {
+    vertical-align: top;
+}
+
+#feedList li {
+    list-style-type: none;
+}
+
+#entries {
+    display: inline-block;
+}
+
+#entries li {
+    max-width: 700px;
+    padding-left: 1em;
+    list-style-type: none;
+    margin-top: 3em;
+}
+
+#superfeedr li {
+    list-style-type: none;
+}
