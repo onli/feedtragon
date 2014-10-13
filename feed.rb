@@ -30,6 +30,10 @@ class Feed
         Database.new.setSubscribe(true, self)
     end
 
+    def unsubscribed!
+        Database.new.setSubscribe(false, self)
+    end
+
     def entries
         Database.new.getEntries(self)
     end

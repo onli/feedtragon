@@ -44,8 +44,19 @@ end
 
 use Rack::Superfeedr do |superfeedr|
     superfeedr.on_notification do |feed_id, body, url, request|
-        JSON.parse(body)["items"].each do |item|
-           Entry.new(url: item["permalinkUrl"], title: item["title"], content: item["content"], feed_id: feed_id).save!
+        notification = JSON.parse(body)
+        if notification["items"] 
+            JSON.parse(body)["items"].each do |item|
+               Entry.new(url: item["permalinkUrl"], title: item["title"], content: item["content"], feed_id: feed_id).save!
+            end
+        else
+            if (Time.now - Time.at(notification["status"]["lastParse"])) > 604800
+                # for more than a week superfeedr was unable to parse this, so we need to unsubscribe to reduce load
+                puts "unsubscribing feed"
+                Rack::Superfeedr.unsubscribe url, feed_id do |n|
+                    Feed.new(id: feed_id).unsubscribed!
+                end
+            end
         end
     end
 end
