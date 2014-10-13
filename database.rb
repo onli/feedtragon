@@ -65,6 +65,14 @@ class Database
         end
     end
     
+    def setRead(status, entry)
+        begin
+            @@db.execute("UPDATE entries SET read = ? WHERE id = ?;", status ? 1 : 0, entry.id.to_i)
+        rescue => error
+            warn "setRead: #{error}"
+        end
+    end
+    
     def addEntry(entry, feed)
         begin
             return @@db.execute("INSERT INTO entries(url, title, content, feed) VALUES(?, ?, ?, ?);", entry.url, entry.title, entry.content, feed.to_i)
@@ -76,8 +84,8 @@ class Database
     def getEntries(feed)
         begin
             entries = []
-            @@db.execute("SELECT url, title, content FROM entries WHERE feed = ?;", feed.id.to_i) do |row|
-                entries.push(Entry.new(title: row["title"], url: row["url"], content: row["content"], feed_id: feed.id.to_i))
+            @@db.execute("SELECT url, title, content, id FROM entries WHERE feed = ? AND read = 0;", feed.id.to_i) do |row|
+                entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: feed.id.to_i))
             end
             return entries
         rescue => error

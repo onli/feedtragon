@@ -12,7 +12,6 @@
                 http.onreadystatechange = function() {
                     if (http.readyState == 4 && http.status == 200) { console.log('marked') }
                 }
-
                 http.open('POST','/' + e.target.dataset['entryid'] + '/read', true);
                 http.send();
             },
@@ -20,7 +19,7 @@
                 if (! n.Entry.checkBlock) {
                     if (! force) {
                         n.Entry.checkBlock = true;
-                        setTimeout(function() { n.Entry.checkBlock = false; checkRead(true) }, 300);
+                        setTimeout(function() { n.Entry.checkBlock = false; n.Entry.checkRead(true) }, 300);
                     }
                     document.getElementsByClassName('read').forEach(function(el) {
                         if (el.isVisible()) {
