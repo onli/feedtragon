@@ -10,5 +10,5 @@ to install the needed gems, and
 
     rackup -E production -p PORT
 
-to start the blog.
+to start.
 
