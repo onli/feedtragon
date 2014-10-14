@@ -22,18 +22,22 @@
                 <ol id="feedList">
                 <% feeds.each do |feed| %>
                     <% if ! feed.entries.nil? && feed.entries.size > 0 %>
-                        <li><a href="<%= url_for '/' + feed.id.to_s %>"><%= feed.name %></a></li>
+                        <li><a href="<%= url_for '/' + feed.id.to_s %>"><%= truncate(feed.name, 35, "...") %></a></li>
                     <% end %>
                 <% end %>
                 </ol>
-                <form id="subscribe" method="POST" action="<%= url_for '/subscribe' %>">
-                    <input type="url" name="url" placeholder="url"/>
-                    <button type="submit">Add</button>
-                </form>
-                <form id="import" method="POST" action="<%= url_for '/import' %>" enctype="multipart/form-data">
-                    <input type="file" name="file" /></label>
-                    <button type="submit">Send</button>
-                </form>
+                <section id="mainControls">
+                    <form id="subscribe" method="POST" action="<%= url_for '/subscribe' %>">
+                        <label for="subscribe_input">add</label>
+                        <input id="subscribe_input" type="url" name="url" placeholder="url"/>
+                        <button type="submit">OK</button>
+                    </form>
+                    <form id="import" method="POST" action="<%= url_for '/import' %>" enctype="multipart/form-data">
+                        <label for="import_input">import</label>
+                        <input id="import_input" type="file" name="file" />
+                        <button type="submit">OK</button>
+                    </form>
+                </section>
             </section>
 
             <% if entries %>

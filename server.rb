@@ -11,7 +11,6 @@ require 'json'
 require 'sinatra/url_for'
 require 'sinatra/browserid'
 require 'nokogiri'
-
 use Rack::Session::Pool
 
 helpers do
@@ -28,6 +27,10 @@ helpers do
         unless isAdmin?
             throw(:halt, [401, "Not authorized\n"])
         end
+    end
+
+    def truncate(text, length, append)
+        return text.gsub(/^(.{#{length},}?).*$/m,'\1' + append)
     end
 end
 

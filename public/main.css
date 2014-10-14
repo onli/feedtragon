@@ -7,6 +7,10 @@ html {
     color: #333;
 }
 
+body {
+    margin-left: 0;
+}
+
 *, *:before, *:after {
     -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
 }
@@ -35,26 +39,71 @@ textarea {
 
 #feeds {
     display: inline-block;
+    position: fixed;
     vertical-align: top;
+    max-width: 20%;
+    min-width: 23em;
+    height: 99%;
+    overflow: auto;
 }
 
 #feedList {
     vertical-align: top;
 }
 
+#feedList a {
+    color: #3B5998;
+}
+
 #feedList li {
     list-style-type: none;
+    margin-bottom: 0.5em;
 }
 
 #entries {
     display: inline-block;
+    width: 100%;
+    padding-left: 23em;
 }
 
 #entries li {
     max-width: 700px;
     padding-left: 1em;
     list-style-type: none;
+    margin: auto;
     margin-top: 3em;
+}
+
+#import {
+    padding: 1em 0;
+}
+
+#subscribe_input {
+    margin-right: 1em;
+    width: 16em;
+    display: block;
+}
+
+#import_input {
+    max-width: 17em;
+}
+
+#mainControls {
+    background-color: #F3F3F3;
+    border-top: 1px solid grey;
+    padding: 0.5em;
+}
+
+#mainControls label {
+    display: block;
+    color: grey;
+    margin-bottom: 0.3em;
+    margin-left: 0.3em;
+}
+
+#mainControls input {
+    display: inline-block;
+    margin-left: 0.3em;
 }
 
 #superfeedr li {
