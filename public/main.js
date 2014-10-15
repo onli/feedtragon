@@ -35,6 +35,7 @@
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementsByClassName('readControl').forEach(function(el) { el.addEventListener('click', n.Entry.markRead) });
         addEventListener('scroll', function() { n.Entry.checkRead(false) });
+        n.Entry.checkRead(true);
     });
 
     if (document.readyState == 'complete' || document.readyState == 'loaded' || document.readyState == 'interactive') {
