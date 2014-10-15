@@ -163,7 +163,7 @@ class Database
 
     def log(name: "", log:)
         begin
-            @@db.execute("INSERT INTO log(name, log) VALUE (?, ?)", name, log)
+            @@db.execute("INSERT INTO log(name, log) VALUEs (?, ?)", name, log)
         rescue => error
             warn "log: #{error}"
         end
