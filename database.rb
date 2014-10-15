@@ -31,6 +31,10 @@ class Database
                                 read INTEGER DEFAULT 0,
                                 FOREIGN KEY (feed) REFERENCES feeds(id) ON DELETE CASCADE
                                 );"
+                @@db.execute "CREATE TABLE IF NOT EXISTS log (
+                    name TEXT,
+                    log TEXT
+                )";
                 @@db.execute "PRAGMA foreign_keys = ON;"
                 @@db.results_as_hash = true
             rescue => error
@@ -154,6 +158,14 @@ class Database
             @@db.execute("UPDATE options SET value = ? WHERE name = ?", value, name)
         rescue => error
             warn "setOption: #{error}"
+        end
+    end
+
+    def log(name: "", log:)
+        begin
+            @@db.execute("INSERT INTO log(name, log) VALUE (?, ?)", name, log)
+        rescue => error
+            warn "log: #{error}"
         end
     end
 end

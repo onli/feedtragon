@@ -47,6 +47,7 @@ end
 
 use Rack::Superfeedr do |superfeedr|
     superfeedr.on_notification do |feed_id, body, url, request|
+        Database.new.log(name: "notification", log: body.to_s) if ! settings.production?
         notification = JSON.parse(body)
         if notification["items"] 
             JSON.parse(body)["items"].each do |item|
@@ -55,7 +56,6 @@ use Rack::Superfeedr do |superfeedr|
         else
             if (Time.now - Time.at(notification["status"]["lastParse"])) > 604800
                 # for more than a week superfeedr was unable to parse this, so we need to unsubscribe to reduce load
-                puts "unsubscribing feed"
                 Rack::Superfeedr.unsubscribe url, feed_id do |n|
                     Feed.new(id: feed_id).unsubscribed!
                 end
