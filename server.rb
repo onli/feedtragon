@@ -50,7 +50,7 @@ use Rack::Superfeedr do |superfeedr|
         Database.new.log(name: "notification", log: body.to_s) if ! settings.production?
         notification = JSON.parse(body)
         if notification["items"]
-            JSON.parse(body)["items"].each do |item|
+            notification["items"].each do |item|
                 content = ""
                 content = item["summary"] if item["summary"]
                 content = item["content"] if item["content"]
