@@ -42,6 +42,12 @@
 
             <% if entries %>
                 <main id="entries">
+                    <form id="readall" method="POST" action="<%= url_for '/readall' %>">
+                        <% entries.each do |entry| %>
+                            <input type="hidden" name="ids[]" value="<%= entry.id %>" />
+                        <% end %>
+                        <button type="submit">Mark all as read</button>
+                    </form>
                     <ol>
                     <% entries.each do |entry| %>
                         <li>

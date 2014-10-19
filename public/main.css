@@ -110,3 +110,8 @@ textarea {
 #superfeedr li {
     list-style-type: none;
 }
+
+#readall {
+    float: right;
+    padding: 1em;
+}

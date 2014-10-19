@@ -95,6 +95,11 @@ post %r{/([0-9]+)/read} do |id|
     Entry.new(id: id).read!
 end
 
+post '/readall' do
+    params[:ids].each {|id| Entry.new(id: id).read!}
+    redirect to('/')
+end
+
 get %r{/([0-9]+)} do |id|
     protected!
     erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => Feed.new(id: id).entries}
