@@ -10,9 +10,12 @@ require 'rack-superfeedr'
 require 'json'
 require 'sinatra/url_for'
 require 'sinatra/browserid'
+require 'sinatra/hijacker'
 require 'nokogiri'
 use Rack::Session::Pool
 register Sinatra::Hijacker
+
+websocket = nil
 
 helpers do
     def isAdmin?
@@ -47,6 +50,7 @@ end
 use Rack::Superfeedr do |superfeedr|
     superfeedr.on_notification do |feed_id, body, url, request|
         Database.new.log(name: "notification", log: body.to_s) if ! settings.production?
+        websocket.send_data({:updated_feed => feed_id}.to_json) if websocket
         notification = JSON.parse(body)
         Feed.new(id: feed_id).setName(name: notification[:title]) if notification[:title]
         if notification["items"]
@@ -119,6 +123,12 @@ post '/addSuperfeedr' do
     db.setOption("secret", SecureRandom.urlsafe_base64(256))
     loadConfiguration()
     redirect to('/')
+end
+
+websocket '/updated' do
+    protected!
+    websocket = ws
+    "Done"
 end
 
 get '/' do

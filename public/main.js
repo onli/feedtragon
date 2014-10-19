@@ -32,12 +32,38 @@
                 }
             }
         },
+        Feed: {
+            getUpdates: function() {
+                var socket = new WebSocket('ws://' + location.host + '/updated');
+
+                socket.onmessage = function(msg){
+                    var updated_feed = JSON.parse(msg.data).updated_feed
+                    console.log(updated_feed)
+                    console.log(document.querySelector('#feed_' + updated_feed))
+                    if (updated_feed && document.querySelector('#feed_' + updated_feed) == null) {
+                        var http = new XMLHttpRequest();
+                
+                        http.onreadystatechange = function() {
+                            if (http.readyState == 4 && http.status == 200) {
+                                document.querySelector('#feedList').insertAdjacentHTML('afterbegin', http.response);
+                            }
+                        }
+                        http.open('GET','/' + updated_feed + '/feedlink', true);
+                        http.send();
+
+                        // TODO: get entry for feed when currently regarding updated feed
+                        // TODO: add entry on top of the list while saving current reading position
+                    }
+                }
+            }
+        }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementsByClassName('readControl').forEach(function(el) { el.addEventListener('click', n.Entry.markRead) });
         addEventListener('scroll', function() { n.Entry.checkRead(false) });
         n.Entry.checkRead(true);
+        n.Feed.getUpdates();
     });
 
     if (document.readyState == 'complete' || document.readyState == 'loaded' || document.readyState == 'interactive') {

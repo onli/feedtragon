@@ -22,7 +22,7 @@
                 <ol id="feedList">
                 <% feeds.each do |feed| %>
                     <% if ! feed.entries.nil? && feed.entries.size > 0 %>
-                        <li><a href="<%= url_for '/' + feed.id.to_s %>"><%= truncate(feed.name, 35, "...") %></a></li>
+                       <%= erb :feedlink, :locals => {:feed => feed} %>
                     <% end %>
                 <% end %>
                 </ol>
