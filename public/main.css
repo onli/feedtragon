@@ -115,3 +115,8 @@ textarea {
     float: right;
     padding: 1em;
 }
+
+.readIcon:after {
+    content: " \2713";
+    color: #8DCC14;
+}

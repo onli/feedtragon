@@ -11,7 +11,7 @@
         <title>Feedreader</title>
         <meta name="description" content="">
         <script src="<%= url_for '/visibility.js' %>" async></script>
-        <script src="<%= url_for '/main.js' %>" async></script>
+        <script src="<%= url_for '/main.js' %>" async defer></script>
     </head>
 
     <body>
@@ -50,7 +50,7 @@
                     </form>
                     <ol>
                     <% entries.each do |entry| %>
-                        <li>
+                        <li id="entry_<%= entry.id %>">
                             <h2><a href="<%= entry.url %>"><%= entry.title %></a></h2>
                             <div><%= entry.content %></div>
                             <hr class="read" data-entryid="<%= entry.id %>"> </hr>

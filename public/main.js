@@ -10,7 +10,9 @@
                 var http = new XMLHttpRequest();
             
                 http.onreadystatechange = function() {
-                    if (http.readyState == 4 && http.status == 200) { console.log('marked') }
+                    if (http.readyState == 4 && http.status == 200) {
+                        document.querySelector('#entry_' + http.response + " h2").className += " readIcon";
+                    }
                 }
                 http.open('POST','/' + e.target.dataset['entryid'] + '/read', true);
                 http.send();

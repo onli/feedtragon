@@ -93,6 +93,7 @@ end
 post %r{/([0-9]+)/read} do |id|
     protected!
     Entry.new(id: id).read!
+    return id
 end
 
 post '/readall' do
