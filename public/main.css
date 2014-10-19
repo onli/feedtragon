@@ -8,7 +8,7 @@ html {
 }
 
 body {
-    margin-left: 0;
+    margin: 0;
 }
 
 *, *:before, *:after {
@@ -43,8 +43,9 @@ textarea {
     vertical-align: top;
     max-width: 20%;
     min-width: 23em;
-    height: 99%;
+    height: 100%;
     overflow: auto;
+    box-shadow: 3px 3px 5px 0px #ccc;
 }
 
 #feedList {
