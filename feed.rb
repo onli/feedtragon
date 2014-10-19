@@ -37,4 +37,8 @@ class Feed
     def entries
         Database.new.getEntries(self)
     end
+
+    def setName(name:)
+        Database.new.setName(name, self)
+    end
 end

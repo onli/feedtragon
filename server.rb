@@ -12,13 +12,12 @@ require 'sinatra/url_for'
 require 'sinatra/browserid'
 require 'nokogiri'
 use Rack::Session::Pool
+register Sinatra::Hijacker
 
 helpers do
     def isAdmin?
         if authorized?
-            if Database.new.getAdminMail == authorized_email
-                return true
-            end
+            return Database.new.getAdminMail == authorized_email
         end
         return false
     end
@@ -49,13 +48,14 @@ use Rack::Superfeedr do |superfeedr|
     superfeedr.on_notification do |feed_id, body, url, request|
         Database.new.log(name: "notification", log: body.to_s) if ! settings.production?
         notification = JSON.parse(body)
+        Feed.new(id: feed_id).setName(name: notification[:title]) if notification[:title]
         if notification["items"]
             notification["items"].each do |item|
                 content = ""
                 content = item["summary"] if item["summary"]
                 content = item["content"] if item["content"]
                 content = item["content"].length > item["summary"].length ? item["content"] : item["summary"]  if item["content"] && item["summary"]
-                Entry.new(  url: item["permalinkUrl"], title: item["title"], content: content, feed_id: feed_id).save!
+                Entry.new(url: item["permalinkUrl"], title: item["title"], content: content, feed_id: feed_id).save!
             end
         else
             if (Time.now - Time.at(notification["status"]["lastParse"])) > 604800
@@ -99,6 +99,10 @@ end
 post '/readall' do
     params[:ids].each {|id| Entry.new(id: id).read!}
     redirect to('/')
+end
+
+get %r{/([0-9]+)/feedlink} do |id|
+    erb :feedlink, :locals => {:feed => Feed.new(id: id)}
 end
 
 get %r{/([0-9]+)} do |id|

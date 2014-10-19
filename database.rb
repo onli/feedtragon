@@ -168,4 +168,12 @@ class Database
             warn "log: #{error}"
         end
     end
+
+    def setName(name, feed)
+        begin
+            @@db.execute("UPDATE feeds SET name = ? WHERE id = ?;", name, feed.id.to_i)
+        rescue => error
+            warn "setName: #{error}"
+        end
+    end
 end
