@@ -13,11 +13,24 @@ class Feed
         if id && ! url
             self.initializeById(id: id)
         end
+        if url && ! id
+            begin
+                self.initializeByUrl(url: url)
+            rescue NoMethodError => nme
+                # the feed is not already in the database
+            end
+        end
     end
 
     def initializeById(id:)
         data = Database.new.getFeedData(id: id)
         self.url = data["url"]
+        self.name = data["name"]
+    end
+
+    def initializeByUrl(url:)
+        data = Database.new.getFeedData(url: url)
+        self.id = data["id"]
         self.name = data["name"]
     end
 
@@ -28,6 +41,10 @@ class Feed
 
     def subscribed!
         Database.new.setSubscribe(true, self)
+    end
+
+    def subscribed?
+        Database.new.getSubscribe(self)
     end
 
     def unsubscribed!

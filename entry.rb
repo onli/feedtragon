@@ -13,6 +13,17 @@ class Entry
         self.content = content
         self.feed_id = feed_id
         self.id = id
+        if id && (! title || ! url || ! content || ! feed_id)
+            self.initializeById(id: id)
+        end
+    end
+
+    def initializeById(id:)
+        data = Database.new.getEntryData(id: id)
+        self.title = data["title"]
+        self.url = data["url"]
+        self.content = data["content"]
+        self.feed_id = data["feed"]
     end
 
     def save!

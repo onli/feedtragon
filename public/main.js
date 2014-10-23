@@ -33,13 +33,17 @@
             }
         },
         Feed: {
+            current_feed: 0,
             getUpdates: function() {
-                var socket = new WebSocket('ws://' + location.host + '/updated');
+                var socket = new WebSocket('ws://' + location.host + '/updated' );
+                
+                socket.onopen = function() {
+                    socket.send(JSON.stringify({feedid: n.Feed.current_feed }));
+                }
 
                 socket.onmessage = function(msg){
-                    var updated_feed = JSON.parse(msg.data).updated_feed
-                    console.log(updated_feed)
-                    console.log(document.querySelector('#feed_' + updated_feed))
+                    var data = JSON.parse(msg.data);
+                    var updated_feed = data.updated_feed;
                     if (updated_feed && document.querySelector('#feed_' + updated_feed) == null) {
                         var http = new XMLHttpRequest();
                 
@@ -50,10 +54,25 @@
                         }
                         http.open('GET','/' + updated_feed + '/feedlink', true);
                         http.send();
-
-                        // TODO: get entry for feed when currently regarding updated feed
-                        // TODO: add entry on top of the list while saving current reading position
                     }
+                    // TODO: get entry for feed when currently regarding updated feed
+                    var new_entry = data.new_entry;
+                    if (new_entry) {
+                        var http_ = new XMLHttpRequest();
+                
+                        http_.onreadystatechange = function() {
+                            if (http_.readyState == 4 && http_.status == 200) {
+                                //document.querySelector('#feedList').insertAdjacentHTML('afterbegin', http.response);
+                                console.log(http_.response);
+                            }
+                        }
+                        http_.open('GET','/' + new_entry + '/entry', true);
+                        http_.send();
+                    }
+                    
+                    
+
+                    // TODO: add entry on top of the list while saving current reading position
                 }
             }
         }
@@ -64,6 +83,10 @@
         addEventListener('scroll', function() { n.Entry.checkRead(false) });
         n.Entry.checkRead(true);
         n.Feed.getUpdates();
+        var main = document.querySelector('main');
+        if (main) {
+            n.Feed.current_feed = main.dataset['feedid'];
+        }
     });
 
     if (document.readyState == 'complete' || document.readyState == 'loaded' || document.readyState == 'interactive') {

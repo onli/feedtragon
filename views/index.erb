@@ -20,6 +20,10 @@
         <% else %>
             <section id="feeds">
                 <ol id="feedList">
+                <li><form method="POST" action="<%= url_for '/readall' %>">
+                    <input type="hidden" name="all" value="true" />
+                    <button type="submit">Mark all as read</button>
+                </form></li>
                 <% feeds.each do |feed| %>
                     <% if ! feed.entries.nil? && feed.entries.size > 0 %>
                        <%= erb :feedlink, :locals => {:feed => feed} %>
@@ -41,7 +45,7 @@
             </section>
 
             <% if entries %>
-                <main id="entries">
+                <main id="entries" data-feedid="<%= feed_id %>">
                     <form id="readall" method="POST" action="<%= url_for '/readall' %>">
                         <% entries.each do |entry| %>
                             <input type="hidden" name="ids[]" value="<%= entry.id %>" />
@@ -50,11 +54,7 @@
                     </form>
                     <ol>
                     <% entries.each do |entry| %>
-                        <li id="entry_<%= entry.id %>">
-                            <h2><a href="<%= entry.url %>"><%= entry.title %></a></h2>
-                            <div><%= entry.content %></div>
-                            <hr class="read" data-entryid="<%= entry.id %>"> </hr>
-                        </li>
+                        <%= erb :entry, :locals => {:entry => entry} %>
                     <% end %>
                     </ol>
                 </main>

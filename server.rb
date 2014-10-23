@@ -15,7 +15,7 @@ require 'nokogiri'
 use Rack::Session::Pool
 register Sinatra::Hijacker
 
-websocket = nil
+websockets = []
 
 helpers do
     def isAdmin?
@@ -49,9 +49,17 @@ end
 
 use Rack::Superfeedr do |superfeedr|
     superfeedr.on_notification do |feed_id, body, url, request|
+        feed_id = feed_id.to_i
         Database.new.log(name: "notification", log: body.to_s) if ! settings.production?
-        websocket.send_data({:updated_feed => feed_id}.to_json) if websocket
+        websockets.each do |feedsockets|
+            if feedsockets
+                feedsockets.each do |feedsocket|
+                    feedsocket.send_data({:updated_feed => feed_id}.to_json)
+                end
+            end
+        end
         notification = JSON.parse(body)
+        puts notification.to_s
         Feed.new(id: feed_id).setName(name: notification[:title]) if notification[:title]
         if notification["items"]
             notification["items"].each do |item|
@@ -59,12 +67,18 @@ use Rack::Superfeedr do |superfeedr|
                 content = item["summary"] if item["summary"]
                 content = item["content"] if item["content"]
                 content = item["content"].length > item["summary"].length ? item["content"] : item["summary"]  if item["content"] && item["summary"]
-                Entry.new(url: item["permalinkUrl"], title: item["title"], content: content, feed_id: feed_id).save!
+                puts content
+                entry = Entry.new(url: item["permalinkUrl"], title: item["title"], content: content, feed_id: feed_id).save!
+                websockets[feed_id].send_data({:new_entry => entry.id}.to_json) if websockets[feed_id]
             end
         else
-            if (Time.now - Time.at(notification["status"]["lastParse"])) > 604800
-                # for more than a week superfeedr was unable to parse this, so we need to unsubscribe to reduce load
-                Rack::Superfeedr.unsubscribe url, feed_id {|n| Feed.new(id: feed_id).unsubscribed! }
+            if notification["status"]["code"] != 0 && (Time.now - Time.at(notification["status"]["lastParse"])) > 604800
+                # this was not a ping && for more than a week superfeedr was unable to parse this, so we need to unsubscribe to reduce load
+                puts "unsubscribing #{feed_id}"
+                Rack::Superfeedr.unsubscribe url, feed_id do |n|
+                    puts "success!"
+                    Feed.new(id: feed_id).unsubscribed!
+                end
             end
         end
     end
@@ -73,6 +87,7 @@ end
 post '/subscribe' do
     protected!
     subscribe(url: params[:url], name: params[:url])
+    redirect to('/')
 end
 
 post '/import' do
@@ -82,15 +97,26 @@ post '/import' do
     doc.xpath("/opml/body/outline").map do |outline|
         subscribe(url: outline.attr("xmlUrl"), name: outline.attr("title"))
     end
-    return "Import done!"
+    redirect to('/')
 end
 
 def subscribe(url:, name:)
     protected!
+    puts "subscribe"
     feed = Feed.new(url: url, name: name).save!
-    return "Error! Already subscribed?" if feed.id.nil?
-    Rack::Superfeedr.subscribe(feed.url, feed.id, {retrieve: true, format: 'json'}) do |body, success, response|
-        feed.subscribed!
+    puts "feed loaded: #{feed.id}"
+    if ! feed.subscribed?
+        puts "feed not already subscribed"
+        Rack::Superfeedr.subscribe(feed.url, feed.id, {retrieve: true, format: 'json'}) do |body, success, response|
+            if success
+                puts "subscription confirmed"
+                feed.subscribed!
+            else
+                puts "error subscribing"
+                puts response
+                puts body
+            end
+        end
     end
 end
 
@@ -101,23 +127,28 @@ post %r{/([0-9]+)/read} do |id|
 end
 
 post '/readall' do
-    params[:ids].each {|id| Entry.new(id: id).read!}
+    protected!
+    params[:ids].each {|id| Entry.new(id: id).read!} if params[:ids]
+    Database.new.readall if params[:all]
     redirect to('/')
 end
 
 get %r{/([0-9]+)/feedlink} do |id|
     erb :feedlink, :locals => {:feed => Feed.new(id: id)}
 end
+get %r{/([0-9]+)/entry} do |id|
+    erb :entry, :locals => {:entry => Entry.new(id: id)}
+end
 
 get %r{/([0-9]+)} do |id|
     protected!
-    erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => Feed.new(id: id).entries}
+    erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => Feed.new(id: id).entries, :feed_id => id}
 end
 
 post '/addSuperfeedr' do
     protected!
     db = Database.new
-    db.setOption("host", params["host"])
+    db.setOption("host", request.host)
     db.setOption("superfeedrName", params["name"])
     db.setOption("superfeedrPassword", params["password"])
     db.setOption("secret", SecureRandom.urlsafe_base64(256))
@@ -127,18 +158,22 @@ end
 
 websocket '/updated' do
     protected!
-    websocket = ws
+    ws.onmessage do |msg| 
+        feedid = JSON.parse(msg)["feedid"].to_i
+        websockets[feedid] ? websockets[feedid] << ws : websockets[feedid] = [ws]
+    end
+    ws.onclose do
+        websockets.each {|websocket| websocket.delete(ws) if websocket}
+    end
     "Done"
 end
 
 get '/' do
     if Database.new.firstUse? || ! Database.new.superfeedrLinked?
-        if ! authorized_email.nil?
-            Database.new.addUser('admin', authorized_email)
-        end
+        Database.new.addUser('admin', authorized_email) if ! authorized_email.nil?
         erb :installer
     else
-        erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => nil}
+        erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => nil, :feed_id => nil}
     end
 end
 

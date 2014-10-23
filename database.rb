@@ -52,9 +52,10 @@ class Database
         end
     end
     
-    def getFeedData(id:) 
+    def getFeedData(id: nil, url: nil) 
         begin
-            return @@db.execute("SELECT url, name FROM feeds WHERE id = ?;", id.to_i)[0]
+            return @@db.execute("SELECT url, name FROM feeds WHERE id = ?;", id.to_i)[0] if id
+            return @@db.execute("SELECT id, name FROM feeds WHERE url = ?;", url)[0] if url
         rescue => error
             warn "getFeedData: #{error}"
         end
@@ -66,6 +67,14 @@ class Database
             @@db.execute("UPDATE feeds SET subscribed = ? WHERE id = ?;", status ? 1 : 0, feed.id.to_i)
         rescue => error
             warn "setSubscribe: #{error}"
+        end
+    end
+
+    def getSubscribe(feed)
+        begin
+            return @@db.execute("SELECT subscribed FROM feeds  WHERE id = ?;", feed.id.to_i)[0]['subscribed'].to_i == 1
+        rescue => error
+            warn "getSubscribe: #{error}"
         end
     end
     
@@ -82,6 +91,14 @@ class Database
             return @@db.execute("INSERT INTO entries(url, title, content, feed) VALUES(?, ?, ?, ?);", entry.url, entry.title, entry.content, feed.to_i)
         rescue => error
             warn "addEntry: #{error}"
+        end
+    end
+
+    def getEntryData(id:) 
+        begin
+            return @@db.execute("SELECT url, title, content, feed FROM entries WHERE id = ?;", id.to_i)[0]
+        rescue => error
+            warn "getEntryData: #{error}"
         end
     end
 
@@ -166,6 +183,14 @@ class Database
             @@db.execute("INSERT INTO log(name, log) VALUEs (?, ?)", name, log)
         rescue => error
             warn "log: #{error}"
+        end
+    end
+
+    def readall
+        begin
+            @@db.execute("UPDATE entries SET read = 1")
+        rescue => error
+            warn "readall: #{error}"
         end
     end
 
