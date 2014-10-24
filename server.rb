@@ -56,7 +56,7 @@ use Rack::Superfeedr do |superfeedr|
         Feed.new(id: feed_id).setName(name: notification[:title]) if notification[:title]
         if notification["items"]
             websockets.each do |feedsockets|
-                feedsockets.each { |feedsocket| feedsocket.send_data({:updated_feed => feed_id}.to_json) } if feedsockets
+                feedsockets.each {|feedsocket| feedsocket.send_data({:updated_feed => feed_id}.to_json)} if feedsockets
             end
             notification["items"].each do |item|
                 content = ""
@@ -130,7 +130,7 @@ post '/readall' do
 end
 
 get %r{/([0-9]+)/feedlink} do |id|
-    erb :feedlink, :locals => {:feed => Feed.new(id: id)}
+    erb :feedlink, :locals => {:feed => Feed.new(id: id), :current_feed_id => nil}
 end
 get %r{/([0-9]+)/entry} do |id|
     erb :entry, :locals => {:entry => Entry.new(id: id)}
@@ -138,7 +138,7 @@ end
 
 get %r{/([0-9]+)} do |id|
     protected!
-    erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => Feed.new(id: id).entries, :feed_id => id}
+    erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => Feed.new(id: id).entries, :current_feed_id => id}
 end
 
 post '/addSuperfeedr' do
@@ -169,7 +169,7 @@ get '/' do
         Database.new.addUser('admin', authorized_email) if ! authorized_email.nil?
         erb :installer
     else
-        erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => nil, :feed_id => nil}
+        erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => nil, :current_feed_id => nil}
     end
 end
 

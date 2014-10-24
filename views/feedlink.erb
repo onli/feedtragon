@@ -1,2 +1,2 @@
 <%# -*- encoding : utf-8 -*- %>
- <li id="feed_<%= feed.id %>"><a href="<%= url_for '/' + feed.id.to_s %>"><%= truncate(feed.name, 35, "...") %></a></li>
+ <li id="feed_<%= feed.id %>" <%= feed.id.to_i == current_feed_id.to_i ? 'class="current"' : ''%>><a href="<%= url_for '/' + feed.id.to_s %>"><%= truncate(feed.name, 35, "...") %></a></li>

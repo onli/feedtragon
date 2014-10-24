@@ -42,6 +42,10 @@ textarea {
 
 /* specifics */
 
+#login {
+    padding-left: 1em;
+}
+
 #feeds {
     display: inline-block;
     position: fixed;
@@ -64,6 +68,10 @@ textarea {
 #feedList li {
     list-style-type: none;
     margin-bottom: 0.5em;
+}
+
+#feedList li.current a {
+    color: #8496bc;
 }
 
 #entries {

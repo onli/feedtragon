@@ -8,7 +8,7 @@
         <meta name="viewport" content="width=device-width">
 
         <link rel="stylesheet" href="<%= url_for '/main.css' %>">
-        <title>Feedreader</title>
+        <title>feedtragon</title>
         <meta name="description" content="">
         <script src="<%= url_for '/visibility.js' %>" async></script>
         <script src="<%= url_for '/main.js' %>" async defer></script>
@@ -16,7 +16,7 @@
 
     <body>
         <% if ! isAdmin? %>
-            <p>Please sign in: <%= render_login_button %></p>
+            <section id="login"><p>Please sign in:</p> <%= render_login_button %></section>
         <% else %>
             <section id="feeds">
                 <ol id="feedList">
@@ -26,7 +26,7 @@
                 </form></li>
                 <% feeds.each do |feed| %>
                     <% if ! feed.entries.nil? && feed.entries.size > 0 %>
-                       <%= erb :feedlink, :locals => {:feed => feed} %>
+                       <%= erb :feedlink, :locals => {:feed => feed, :current_feed_id => current_feed_id} %>
                     <% end %>
                 <% end %>
                 </ol>
@@ -45,7 +45,7 @@
             </section>
 
             <% if entries %>
-                <main id="entries" data-feedid="<%= feed_id %>">
+                <main id="entries" data-feedid="<%= current_feed_id %>">
                     <form id="readall" method="POST" action="<%= url_for '/readall' %>">
                         <% entries.each do |entry| %>
                             <input type="hidden" name="ids[]" value="<%= entry.id %>" />
