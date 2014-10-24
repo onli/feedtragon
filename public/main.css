@@ -129,6 +129,10 @@ textarea {
     padding: 1em;
 }
 
+#feedReadall {
+    padding: 1em 1em 0 1em;
+}
+
 .readIcon:after {
     content: " \2713";
     color: #8DCC14;

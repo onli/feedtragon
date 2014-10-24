@@ -19,11 +19,11 @@
             <section id="login"><p>Please sign in:</p> <%= render_login_button %></section>
         <% else %>
             <section id="feeds">
-                <ol id="feedList">
-                <li><form method="POST" action="<%= url_for '/readall' %>">
+                <form id="feedReadall" method="POST" action="<%= url_for '/readall' %>">
                     <input type="hidden" name="all" value="true" />
                     <button type="submit">Mark all as read</button>
-                </form></li>
+                </form>
+                <ol id="feedList">
                 <% feeds.each do |feed| %>
                     <% if ! feed.entries.nil? && feed.entries.size > 0 %>
                        <%= erb :feedlink, :locals => {:feed => feed, :current_feed_id => current_feed_id} %>
