@@ -55,9 +55,7 @@ use Rack::Superfeedr do |superfeedr|
         puts notification.to_s
         Feed.new(id: feed_id).setName(name: notification[:title]) if notification[:title]
         if notification["items"]
-            websockets.each do |feedsockets|
-                feedsockets.each {|feedsocket| feedsocket.send_data({:updated_feed => feed_id}.to_json)} if feedsockets
-            end
+            websockets.each {|feedsockets| feedsockets.each {|feedsocket| feedsocket.send_data({:updated_feed => feed_id}.to_json)} if feedsockets }
             notification["items"].each do |item|
                 content = ""
                 content = item["summary"] if item["summary"]
@@ -65,7 +63,7 @@ use Rack::Superfeedr do |superfeedr|
                 content = item["content"].length > item["summary"].length ? item["content"] : item["summary"]  if item["content"] && item["summary"]
                 puts content
                 entry = Entry.new(url: item["permalinkUrl"], title: item["title"], content: content, feed_id: feed_id).save!
-                websockets[feed_id].send_data({:new_entry => entry.id}.to_json) if websockets[feed_id]
+                websockets[feed_id].each {|feedsocket| feedsocket.send_data({:new_entry => entry.id}.to_json) if feedsocket}
             end
         else
             if notification["status"]["code"] != 0 && (Time.now - Time.at(notification["status"]["lastParse"])) > 604800

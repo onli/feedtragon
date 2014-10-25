@@ -7,15 +7,17 @@
         Entry: {
             checkBlock: false,
             markRead: function(e) {
-                var http = new XMLHttpRequest();
-            
-                http.onreadystatechange = function() {
-                    if (http.readyState == 4 && http.status == 200) {
-                        document.querySelector('#entry_' + http.response + " h2").className += " readIcon";
+                if (! document.querySelector('#entry_' + e.target.dataset['entryid'] + ' h2').className.contains('readIcon')) {
+                    var http = new XMLHttpRequest();
+                
+                    http.onreadystatechange = function() {
+                        if (http.readyState == 4 && http.status == 200) {
+                            document.querySelector('#entry_' + http.response + ' h2').className += ' readIcon';
+                        }
                     }
+                    http.open('POST','/' + e.target.dataset['entryid'] + '/read', true);
+                    http.send();
                 }
-                http.open('POST','/' + e.target.dataset['entryid'] + '/read', true);
-                http.send();
             },
             checkRead: function(force) {
                 if (! n.Entry.checkBlock) {
@@ -55,31 +57,34 @@
                         http.open('GET','/' + updated_feed + '/feedlink', true);
                         http.send();
                     }
-                    // TODO: get entry for feed when currently regarding updated feed
                     var new_entry = data.new_entry;
                     if (new_entry) {
                         var http_ = new XMLHttpRequest();
                 
                         http_.onreadystatechange = function() {
                             if (http_.readyState == 4 && http_.status == 200) {
-                                //document.querySelector('#feedList').insertAdjacentHTML('afterbegin', http.response);
-                                console.log(http_.response);
+                                var oldScrollPos = window.pageYOffset || document.documentElement.scrollTop; // we need to restore the scrollbar position later
+                                
+                                var range = document.createRange();
+                                var newEntry = range.createContextualFragment(http_.response);
+                                var entryList = document.querySelector('main ol');
+                                entryList.insertBefore(newEntry, entryList.firstChild);
+                                
+                                newEntry = entryList.querySelector('#entry_' + new_entry);
+                                var marginTop = window.getComputedStyle(newEntry).marginTop;
+                                // the margin is not part of height, so it needs to be added
+                                window.scrollTo(0, oldScrollPos + newEntry.scrollHeight +  parseInt(marginTop.substring(0, marginTop.indexOf('px'))));
                             }
                         }
                         http_.open('GET','/' + new_entry + '/entry', true);
                         http_.send();
                     }
-                    
-                    
-
-                    // TODO: add entry on top of the list while saving current reading position
                 }
             }
         }
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        document.getElementsByClassName('readControl').forEach(function(el) { el.addEventListener('click', n.Entry.markRead) });
         addEventListener('scroll', function() { n.Entry.checkRead(false) });
         n.Entry.checkRead(true);
         n.Feed.getUpdates();
