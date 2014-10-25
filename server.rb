@@ -128,14 +128,15 @@ post '/readall' do
 end
 
 get %r{/([0-9]+)/feedlink} do |id|
+    protected!
     erb :feedlink, :locals => {:feed => Feed.new(id: id), :current_feed_id => nil}
 end
 get %r{/([0-9]+)/entry} do |id|
+    protected!
     erb :entry, :locals => {:entry => Entry.new(id: id)}
 end
 
 get %r{/([0-9]+)} do |id|
-    protected!
     erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => Feed.new(id: id).entries, :current_feed_id => id}
 end
 
