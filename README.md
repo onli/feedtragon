@@ -12,3 +12,6 @@ to install the needed gems, and
 
 to start.
 
+# Requirements
+
+ Ruby 2.1.0 or greater
