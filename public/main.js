@@ -5,7 +5,8 @@
     
     var n = {
         Entry: {
-            checkBlock: false,
+            check_block: false,
+            current_entry: 0,
             markRead: function(e) {
                 if (! document.querySelector('#entry_' + e.target.dataset['entryid'] + ' h2').className.contains('readIcon')) {
                     var http = new XMLHttpRequest();
@@ -20,10 +21,10 @@
                 }
             },
             checkRead: function(force) {
-                if (! n.Entry.checkBlock) {
+                if (! n.Entry.check_block) {
                     if (! force) {
-                        n.Entry.checkBlock = true;
-                        setTimeout(function() { n.Entry.checkBlock = false; n.Entry.checkRead(true) }, 300);
+                        n.Entry.check_block = true;
+                        setTimeout(function() { n.Entry.check_block = false; n.Entry.checkRead(true) }, 300);
                     }
                     document.getElementsByClassName('read').forEach(function(el) {
                         if (el.isVisible()) {
@@ -32,6 +33,20 @@
                         }
                     });
                 }
+            },
+            gotoNext: function(currentEntry) {
+                var el = document.querySelector('.read[data-entryid="' + currentEntry + '"]');
+                el.target = el;
+                n.Entry.markRead(el);
+                var entries = document.querySelectorAll('.entry');
+                entries.forEach(function(entry, i) {
+                    if (entry.id == "entry_"+currentEntry) {
+                        var nextEntry = entries[i+1];
+                        n.Entry.current_entry = nextEntry.querySelector('.read').dataset['entryid'];
+                        nextEntry.scrollIntoView();
+                        return;
+                    }
+                });
             }
         },
         Feed: {
@@ -91,7 +106,12 @@
         var main = document.querySelector('main');
         if (main) {
             n.Feed.current_feed = main.dataset['feedid'];
+            n.Entry.current_entry = main.querySelector('.read').dataset['entryid'];
         }
+        addEventListener('keyup', function(evt) {
+                                        if (evt.which == 74) { n.Entry.gotoNext(n.Entry.current_entry); } // j
+                                    }
+                                );
     });
 
     if (document.readyState == 'complete' || document.readyState == 'loaded' || document.readyState == 'interactive') {
