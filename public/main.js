@@ -34,14 +34,23 @@
                     });
                 }
             },
-            gotoNext: function(currentEntry) {
-                var el = document.querySelector('.read[data-entryid="' + currentEntry + '"]');
+            markCurrent: function() {
+                var el = document.querySelector('.read[data-entryid="' + n.Entry.current_entry + '"]');
                 el.target = el;
                 n.Entry.markRead(el);
+            },
+            gotoNext: function(currentEntry) {
+                n.Entry.markCurrent();
+                var nextEntry = document.querySelector('#entry_' + currentEntry + ' + li')
+                n.Entry.current_entry = nextEntry.querySelector('.read').dataset['entryid'];
+                nextEntry.scrollIntoView();
+            },
+            gotoPrev: function(currentEntry) {
+                n.Entry.markCurrent();
                 var entries = document.querySelectorAll('.entry');
                 entries.forEach(function(entry, i) {
                     if (entry.id == "entry_"+currentEntry) {
-                        var nextEntry = entries[i+1];
+                        var nextEntry = entries[i-1];
                         n.Entry.current_entry = nextEntry.querySelector('.read').dataset['entryid'];
                         nextEntry.scrollIntoView();
                         return;
@@ -110,6 +119,7 @@
         }
         addEventListener('keyup', function(evt) {
                                         if (evt.which == 74) { n.Entry.gotoNext(n.Entry.current_entry); } // j
+                                        if (evt.which == 75) { n.Entry.gotoPrev(n.Entry.current_entry); } // k
                                     }
                                 );
     });
