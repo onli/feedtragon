@@ -15,3 +15,8 @@ to start.
 # Requirements
 
  Ruby 2.1.0 or greater
+
+# Credit
+
+Dragon Smoke: https://secure.flickr.com/photos/mjphoto/370125997 
+RSS-Icon: https://secure.flickr.com/photos/teiamg/4136268819
