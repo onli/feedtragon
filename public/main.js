@@ -7,6 +7,7 @@
         Entry: {
             check_block: false,
             current_entry: 0,
+            current_marker_top: null,
             markRead: function(e) {
                 if (! document.querySelector('#entry_' + e.target.dataset['entryid'] + ' h2').className.contains('readIcon')) {
                     var http = new XMLHttpRequest();
@@ -31,6 +32,23 @@
                             el.target = el; // markRead expects an evt pointing to the element
                             n.Entry.markRead(el);
                         }
+                    });
+                }
+            },
+            checkCurrent: function() {
+                if (! n.Entry.check_block) {
+                    if (! n.Entry.current_marker_top) {
+                        n.Entry.current_marker_top = window.innerHeight * 0.15;
+                        // it would be nicer to use clientHeight of #entries, but that does not work in FF 33, contrary to what mdn says
+                    }
+
+                    document.getElementsByClassName('entry').forEach(function(el) {
+                        if (el.isVisible()) {
+                            var entryTop = el.getBoundingClientRect().top;
+                            if (entryTop >= n.Entry.current_marker_top) {
+                               n.Entry.current_entry = el.querySelector('.read').dataset['entryid'];
+                            }
+                        };
                     });
                 }
             },
@@ -109,7 +127,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        addEventListener('scroll', function() { n.Entry.checkRead(false) });
         n.Entry.checkRead(true);
         n.Feed.getUpdates();
         var main = document.querySelector('main');
@@ -117,11 +134,17 @@
             n.Feed.current_feed = main.dataset['feedid'];
             n.Entry.current_entry = main.querySelector('.read').dataset['entryid'];
         }
+
+        addEventListener('scroll', function() {
+                                            n.Entry.checkCurrent();
+                                            n.Entry.checkRead(false);
+                                        }
+        );
         addEventListener('keyup', function(evt) {
                                         if (evt.which == 74) { n.Entry.gotoNext(n.Entry.current_entry); } // j
                                         if (evt.which == 75) { n.Entry.gotoPrev(n.Entry.current_entry); } // k
                                     }
-                                );
+        );
     });
 
     if (document.readyState == 'complete' || document.readyState == 'loaded' || document.readyState == 'interactive') {
