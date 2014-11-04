@@ -34,4 +34,8 @@ class Entry
     def read!
         Database.new.setRead(true, self)
     end
+    
+    def unread!
+        Database.new.setRead(false, self)
+    end
 end

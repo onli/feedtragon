@@ -8,8 +8,8 @@
             check_block: false,
             current_entry: 0,
             current_marker_top: null,
-            markRead: function(e) {
-                if (! document.querySelector('#entry_' + e.target.dataset['entryid'] + ' h2').className.contains('readIcon')) {
+            markRead: function(entryId) {
+                if (! document.querySelector('#entry_' + entryId + ' h2').className.contains('readIcon')) {
                     var http = new XMLHttpRequest();
                 
                     http.onreadystatechange = function() {
@@ -17,7 +17,20 @@
                             document.querySelector('#entry_' + http.response + ' h2').className += ' readIcon';
                         }
                     }
-                    http.open('POST','/' + e.target.dataset['entryid'] + '/read', true);
+                    http.open('POST','/' + entryId + '/read', true);
+                    http.send();
+                }
+            },
+            markUnread: function(entryId) {
+                if (document.querySelector('#entry_' + entryId + ' h2').className.contains('readIcon')) {
+                    var http = new XMLHttpRequest();
+                
+                    http.onreadystatechange = function() {
+                        if (http.readyState == 4 && http.status == 200) {
+                            document.querySelector('#entry_' + http.response + ' h2').classList.remove('readIcon');
+                        }
+                    }
+                    http.open('POST','/' + entryId + '/unread', true);
                     http.send();
                 }
             },
@@ -29,8 +42,7 @@
                     }
                     document.getElementsByClassName('read').forEach(function(el) {
                         if (el.isVisible()) {
-                            el.target = el; // markRead expects an evt pointing to the element
-                            n.Entry.markRead(el);
+                            n.Entry.markRead(el.dataset['entryid']);
                         }
                     });
                 }
@@ -52,13 +64,8 @@
                     });
                 }
             },
-            markCurrent: function() {
-                var el = document.querySelector('.read[data-entryid="' + n.Entry.current_entry + '"]');
-                el.target = el;
-                n.Entry.markRead(el);
-            },
             goto: function(nextEntry) {
-                n.Entry.markCurrent();
+                n.Entry.markRead(n.Entry.current_entry);
                 n.Entry.current_entry = nextEntry.querySelector('.read').dataset['entryid'];
                 nextEntry.scrollIntoView();
             },
@@ -71,6 +78,13 @@
             },
             openCurrent: function() {
                 window.open(document.querySelector('#entry_' + n.Entry.current_entry + ' h2 a').href);
+            },
+            toggleRead: function(entryId) {
+                if (document.querySelector('#entry_' + entryId + ' h2').className.contains('readIcon')) {
+                    n.Entry.markUnread(entryId);
+                } else {
+                    n.Entry.markRead(entryId);
+                }
             }
         },
         Feed: {
@@ -150,7 +164,7 @@
                                         if (evt.which == 78) { n.Feed.gotoNext(); } // n
                                         if (evt.which == 80) { n.Feed.gotoPrev(); } // p
                                         if (evt.which == 86) { n.Entry.openCurrent(); } // v
-                                        if (evt.which == 77) { n.Entry.toggleRead(); } // m
+                                        if (evt.which == 77) { n.Entry.toggleRead(n.Entry.current_entry); } // m
                                     }
         );
     });

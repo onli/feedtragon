@@ -118,6 +118,12 @@ post %r{/([0-9]+)/read} do |id|
     return id
 end
 
+post %r{/([0-9]+)/unread} do |id|
+    protected!
+    Entry.new(id: id).unread!
+    return id
+end
+
 post '/readall' do
     protected!
     params[:ids].each {|id| Entry.new(id: id).read!} if params[:ids]
