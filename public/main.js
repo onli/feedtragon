@@ -39,7 +39,7 @@
                 if (! n.Entry.check_block) {
                     if (! n.Entry.current_marker_top) {
                         n.Entry.current_marker_top = window.innerHeight * 0.15;
-                        // it would be nicer to use clientHeight of #entries, but that does not work in FF 33, contrary to what mdn says
+                        // it would be nicer to use clientHeight of #entries, but that does not work in FF 33 as it also returns overflow, contrary to what mdn says
                     }
 
                     document.getElementsByClassName('entry').forEach(function(el) {
@@ -65,15 +65,12 @@
             },
             gotoPrev: function() {
                 n.Entry.markCurrent();
-                var entries = document.querySelectorAll('.entry');
-                entries.forEach(function(entry, i) {
-                    if (entry.id == "entry_"+n.Entry.current_entry) {
-                        var nextEntry = entries[i-1];
-                        n.Entry.current_entry = nextEntry.querySelector('.read').dataset['entryid'];
-                        nextEntry.scrollIntoView();
-                        return;
-                    }
-                });
+                // the doubled previousChild is necessary because it also returns textnodes, there seems to be no alternative
+                var nextEntry = document.querySelector('#entry_' + n.Entry.current_entry).previousSibling.previousSibling;
+                n.Entry.current_entry = nextEntry.querySelector('.read').dataset['entryid'];
+                nextEntry.scrollIntoView();
+                return;
+                    
             }
         },
         Feed: {
@@ -127,7 +124,7 @@
                 window.location = document.querySelector('#feed_' + n.Feed.current_feed + ' + li a').href;
             },
             gotoPrev: function() {
-                // the doubled previousChild is necessary because it also returns textnodes, there seems to be no alternative
+                 // the doubled previousChild is necessary because it also returns textnodes, there seems to be no alternative
                 window.location = document.querySelector('#feed_' + n.Feed.current_feed).previousSibling.previousSibling.firstChild.href;
             }
         }
