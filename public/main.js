@@ -57,20 +57,20 @@
                 el.target = el;
                 n.Entry.markRead(el);
             },
-            gotoNext: function() {
+            goto: function(nextEntry) {
                 n.Entry.markCurrent();
-                var nextEntry = document.querySelector('#entry_' + n.Entry.current_entry + ' + li')
                 n.Entry.current_entry = nextEntry.querySelector('.read').dataset['entryid'];
                 nextEntry.scrollIntoView();
             },
+            gotoNext: function() {
+                n.Entry.goto(document.querySelector('#entry_' + n.Entry.current_entry + ' + li'));
+            },
             gotoPrev: function() {
-                n.Entry.markCurrent();
                 // the doubled previousChild is necessary because it also returns textnodes, there seems to be no alternative
-                var nextEntry = document.querySelector('#entry_' + n.Entry.current_entry).previousSibling.previousSibling;
-                n.Entry.current_entry = nextEntry.querySelector('.read').dataset['entryid'];
-                nextEntry.scrollIntoView();
-                return;
-                    
+                n.Entry.goto(document.querySelector('#entry_' + n.Entry.current_entry).previousSibling.previousSibling);
+            },
+            openCurrent: function() {
+                window.open(document.querySelector('#entry_' + n.Entry.current_entry + ' h2 a').href);
             }
         },
         Feed: {
@@ -149,7 +149,7 @@
                                         if (evt.which == 75) { n.Entry.gotoPrev(); } // k
                                         if (evt.which == 78) { n.Feed.gotoNext(); } // n
                                         if (evt.which == 80) { n.Feed.gotoPrev(); } // p
-                                        if (evt.which == 86) { n.Entry.openCurrentEntry(); } // v
+                                        if (evt.which == 86) { n.Entry.openCurrent(); } // v
                                         if (evt.which == 77) { n.Entry.toggleRead(); } // m
                                     }
         );
