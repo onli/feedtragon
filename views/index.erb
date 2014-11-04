@@ -40,11 +40,7 @@
                     <button type="submit">Mark all as read</button>
                 </form>
                 <ol id="feedList">
-                <% feeds.each do |feed| %>
-                    <% if ! feed.entries.nil? && feed.entries.size > 0 %>
-                       <%= erb :feedlink, :locals => {:feed => feed, :current_feed_id => current_feed_id} %>
-                    <% end %>
-                <% end %>
+                <% feeds.each {|feed| %><%= erb :feedlink, :locals => {:feed => feed, :current_feed_id => current_feed_id} if ! feed.entries.nil? && feed.entries.size > 0 %><% } %>
                 </ol>
                 <section id="mainControls">
                     <form id="subscribe" method="POST" action="<%= url_for '/subscribe' %>">

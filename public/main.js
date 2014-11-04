@@ -57,17 +57,17 @@
                 el.target = el;
                 n.Entry.markRead(el);
             },
-            gotoNext: function(currentEntry) {
+            gotoNext: function() {
                 n.Entry.markCurrent();
-                var nextEntry = document.querySelector('#entry_' + currentEntry + ' + li')
+                var nextEntry = document.querySelector('#entry_' + n.Entry.current_entry + ' + li')
                 n.Entry.current_entry = nextEntry.querySelector('.read').dataset['entryid'];
                 nextEntry.scrollIntoView();
             },
-            gotoPrev: function(currentEntry) {
+            gotoPrev: function() {
                 n.Entry.markCurrent();
                 var entries = document.querySelectorAll('.entry');
                 entries.forEach(function(entry, i) {
-                    if (entry.id == "entry_"+currentEntry) {
+                    if (entry.id == "entry_"+n.Entry.current_entry) {
                         var nextEntry = entries[i-1];
                         n.Entry.current_entry = nextEntry.querySelector('.read').dataset['entryid'];
                         nextEntry.scrollIntoView();
@@ -122,6 +122,13 @@
                         http_.send();
                     }
                 }
+            },
+            gotoNext: function() {
+                window.location = document.querySelector('#feed_' + n.Feed.current_feed + ' + li a').href;
+            },
+            gotoPrev: function() {
+                // the doubled previousChild is necessary because it also returns textnodes, there seems to be no alternative
+                window.location = document.querySelector('#feed_' + n.Feed.current_feed).previousSibling.previousSibling.firstChild.href;
             }
         }
     }
@@ -141,8 +148,12 @@
                                         }
         );
         addEventListener('keyup', function(evt) {
-                                        if (evt.which == 74) { n.Entry.gotoNext(n.Entry.current_entry); } // j
-                                        if (evt.which == 75) { n.Entry.gotoPrev(n.Entry.current_entry); } // k
+                                        if (evt.which == 74) { n.Entry.gotoNext(); } // j
+                                        if (evt.which == 75) { n.Entry.gotoPrev(); } // k
+                                        if (evt.which == 78) { n.Feed.gotoNext(); } // n
+                                        if (evt.which == 80) { n.Feed.gotoPrev(); } // p
+                                        if (evt.which == 86) { n.Entry.openCurrentEntry(); } // v
+                                        if (evt.which == 77) { n.Entry.toggleRead(); } // m
                                     }
         );
     });
