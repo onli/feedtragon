@@ -52,7 +52,7 @@ use Rack::Superfeedr do |superfeedr|
         feed_id = feed_id.to_i
         Database.new.log(name: "notification", log: body.to_s) if ! settings.production?
         notification = JSON.parse(body)
-        Feed.new(id: feed_id).setName(name: notification[:title]) if notification[:title]
+        Feed.new(id: feed_id).setName(name: notification["title"]) if notification["title"]
         if notification["items"]
             websockets.each {|feedsockets| feedsockets.each {|feedsocket| feedsocket.send_data({:updated_feed => feed_id}.to_json)} if feedsockets }
             notification["items"].each do |item|
