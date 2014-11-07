@@ -34,6 +34,10 @@ input, textarea, button {
     font-size: inherit;
 }
 
+button {
+    cursor: pointer;
+}
+
 textarea {
     /* textarea-borders else might differ from input-boxes in chrome */
     -moz-appearance: textfield;
@@ -142,4 +146,14 @@ textarea {
 .readIcon:after {
     content: " \2713";
     color: #8DCC14;
+}
+
+.unsubscribe {
+    display: inline;
+    visibility: hidden;
+    vertical-align: baseline;
+}
+
+.feedlink:hover .unsubscribe {
+    visibility: visible !important;
 }

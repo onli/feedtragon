@@ -80,6 +80,13 @@ post '/subscribe' do
     redirect to('/')
 end
 
+post %r{/([0-9]+)/unsubscribe} do |id|
+    feed = Feed.new(id: id)
+    Rack::Superfeedr.unsubscribe(feed.url, id)
+    feed.unsubscribed!
+    redirect to('/')
+end
+
 post '/import' do
     protected!
     opml = params[:file][:tempfile].read
