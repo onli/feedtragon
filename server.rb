@@ -56,9 +56,7 @@ use Rack::Superfeedr do |superfeedr|
         if notification["items"]
             websockets.each {|feedsockets| feedsockets.each {|feedsocket| feedsocket.send_data({:updated_feed => feed_id}.to_json)} if feedsockets }
             notification["items"].each do |item|
-                content = ""
-                content = item["summary"] if item["summary"]
-                content = item["content"] if item["content"]
+                content = item["content"] || item["summary"]
                 content = item["content"].length > item["summary"].length ? item["content"] : item["summary"]  if item["content"] && item["summary"]
                 entry = Entry.new(url: item["permalinkUrl"], title: item["title"], content: content, feed_id: feed_id).save!
                 websockets[feed_id].each {|feedsocket| feedsocket.send_data({:new_entry => entry.id}.to_json) if feedsocket} if websockets[feed_id]
