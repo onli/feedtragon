@@ -1,5 +1,7 @@
 **feedtragón** is a small self-hosted RSS-reader. Instead of polling feeds on its own, it is using [superfeedr](https://superfeedr.com) to get updates of subscribed feeds.
 
+![feedtragon alpha screenshot](https://www.onli-blogging.de/uploads/feedtragon_alpha1.png)
+
 # Installation
 
 Download the files from the repository. If you have ruby installed, make sure that the `bundle` gem is installed. Then, run
@@ -16,7 +18,7 @@ to start.
 
  Ruby 2.1.0 or greater
 
-# Credit
+# Credits
 
-Dragon Smoke: https://secure.flickr.com/photos/mjphoto/370125997 
-RSS-Icon: https://secure.flickr.com/photos/teiamg/4136268819
+ * Dragon Smoke: https://secure.flickr.com/photos/mjphoto/370125997 
+ * RSS-Icon: https://secure.flickr.com/photos/teiamg/4136268819
