@@ -146,7 +146,7 @@ get %r{/([0-9]+)/entry} do |id|
 end
 
 get %r{/([0-9]+)} do |id|
-    erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => Feed.new(id: id).entries, :current_feed_id => id}
+    erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => Feed.new(id: id).entries, :current_feed_id => id, :showSettings => false}
 end
 
 post '/addSuperfeedr' do
@@ -172,12 +172,16 @@ websocket '/updated' do
     "Done"
 end
 
+get '/add' do
+    erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => nil, :current_feed_id => nil, :showSettings => true}
+end
+
 get '/' do
     if Database.new.firstUse? || ! Database.new.superfeedrLinked?
         Database.new.addUser('admin', authorized_email) if ! authorized_email.nil?
         erb :installer
     else
-        erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => nil, :current_feed_id => nil}
+        erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => nil, :current_feed_id => nil, :showSettings => false}
     end
 end
 

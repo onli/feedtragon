@@ -1,0 +1,13 @@
+<section id="addForms">
+    <form id="subscribe" method="POST" action="<%= url_for '/subscribe' %>">
+        <label for="subscribe_input">Add:</label>
+        <input id="subscribe_input" type="url" name="url" placeholder="url"/>
+        <button type="submit">OK</button>
+    </form>
+    <hr />
+    <form id="import" method="POST" action="<%= url_for '/import' %>" enctype="multipart/form-data">
+        <label for="import_input">Import:</label>
+        <input id="import_input" type="file" name="file" />
+        <button type="submit">OK</button>
+    </form>
+</section>

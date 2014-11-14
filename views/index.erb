@@ -1,60 +1,13 @@
 <%# -*- encoding : utf-8 -*- %>
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-
-        <meta name="viewport" content="width=device-width">
-
-        <link rel="stylesheet" href="<%= url_for '/main.css' %>">
-        <title>feedtragon</title>
-        <meta name="description" content="">
-        <script src="<%= url_for '/visibility.js' %>"></script>
-        <script src="<%= url_for '/main.js' %>" async defer></script>
-        <link rel="apple-touch-icon" sizes="57x57" href="/apple-touch-icon-57x57.png">
-        <link rel="apple-touch-icon" sizes="114x114" href="/apple-touch-icon-114x114.png">
-        <link rel="apple-touch-icon" sizes="72x72" href="/apple-touch-icon-72x72.png">
-        <link rel="apple-touch-icon" sizes="144x144" href="/apple-touch-icon-144x144.png">
-        <link rel="apple-touch-icon" sizes="60x60" href="/apple-touch-icon-60x60.png">
-        <link rel="apple-touch-icon" sizes="120x120" href="/apple-touch-icon-120x120.png">
-        <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon-76x76.png">
-        <link rel="apple-touch-icon" sizes="152x152" href="/apple-touch-icon-152x152.png">
-        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png">
-        <link rel="icon" type="image/png" href="/favicon-192x192.png" sizes="192x192">
-        <link rel="icon" type="image/png" href="/favicon-160x160.png" sizes="160x160">
-        <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96">
-        <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
-        <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
-        <meta name="msapplication-TileColor" content="#da532c">
-        <meta name="msapplication-TileImage" content="/mstile-144x144.png">
-    </head>
+    <%= erb :head %>
 
     <body>
         <% if ! isAdmin? %>
             <section id="login"><p>Please sign in:</p> <%= render_login_button %></section>
         <% else %>
-            <section id="feeds">
-                <form id="feedReadall" method="POST" action="<%= url_for '/readall' %>">
-                    <input type="hidden" name="all" value="true" />
-                    <button type="submit">Mark all as read</button>
-                </form>
-                <ol id="feedList">
-                <% feeds.each {|feed| %><%= erb :feedlink, :locals => {:feed => feed, :current_feed_id => current_feed_id} if ! feed.entries.nil? && feed.entries.size > 0 %><% } %>
-                </ol>
-                <section id="mainControls">
-                    <form id="subscribe" method="POST" action="<%= url_for '/subscribe' %>">
-                        <label for="subscribe_input">add</label>
-                        <input id="subscribe_input" type="url" name="url" placeholder="url"/>
-                        <button type="submit">OK</button>
-                    </form>
-                    <form id="import" method="POST" action="<%= url_for '/import' %>" enctype="multipart/form-data">
-                        <label for="import_input">import</label>
-                        <input id="import_input" type="file" name="file" />
-                        <button type="submit">OK</button>
-                    </form>
-                </section>
-            </section>
+            <%= erb :feedlist, :locals => {:feeds => feeds, :current_feed_id => current_feed_id} %>
 
             <% if entries %>
                 <main id="entries" data-feedid="<%= current_feed_id %>">
@@ -62,13 +15,18 @@
                         <% entries.each do |entry| %>
                             <input type="hidden" name="ids[]" value="<%= entry.id %>" />
                         <% end %>
-                        <button type="submit">Mark all as read</button>
+                        <button type="submit" title="Mark all as read">&#10003;</button>
                     </form>
                     <ol>
                     <% entries.each do |entry| %>
                         <%= erb :entry, :locals => {:entry => entry} %>
                     <% end %>
                     </ol>
+                </main>
+            <% end %>
+            <% if showSettings %>
+                <main id="entries">
+                    <%= erb :addForm %>
                 </main>
             <% end %>
         <% end %>  

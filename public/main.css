@@ -63,6 +63,10 @@ textarea {
 
 #feedList {
     vertical-align: top;
+    margin-top: 1.4em;
+    margin-bottom: 0;
+    margin-left: 1.6em;
+    padding-left: 0;
 }
 
 #feedList a {
@@ -92,38 +96,6 @@ textarea {
     margin-top: 3em;
 }
 
-#import {
-    padding: 1em 0;
-}
-
-#subscribe_input {
-    margin-right: 1em;
-    width: 16em;
-    display: block;
-}
-
-#import_input {
-    max-width: 17em;
-}
-
-#mainControls {
-    background-color: #F3F3F3;
-    border-top: 1px solid grey;
-    padding: 0.5em;
-}
-
-#mainControls label {
-    display: block;
-    color: grey;
-    margin-bottom: 0.3em;
-    margin-left: 0.3em;
-}
-
-#mainControls input {
-    display: inline-block;
-    margin-left: 0.3em;
-}
-
 #superfeedr li {
     list-style-type: none;
 }
@@ -134,7 +106,8 @@ textarea {
 }
 
 #feedReadall {
-    padding: 1em 1em 0 1em;
+    float: right;
+    padding: 1em;
 }
 
 .read {
@@ -156,4 +129,46 @@ textarea {
 
 .feedlink:hover .unsubscribe {
     visibility: visible !important;
+}
+
+#addLink {
+    font-size: 1.4em;
+    font-weight: bold;
+    margin-left: 1em;
+    padding-bottom: 1em;
+    color: #3B5998;
+}
+
+#addForms  {
+    padding-left: 2em;
+    padding-top: 2em;
+    display: table;
+    table-layout: fixed;
+}
+
+#addForms form,
+#addForms hr {
+    display: table-row;
+}
+
+#addForms hr {
+    height: 1em;
+}
+
+#addForms label,
+#addForms input,
+#addForms button {
+    display: table-cell;
+}
+
+#addForms label {
+    padding-right: 1em;
+}
+
+#addForms button {
+    margin-left: 1em;
+}
+
+#addForms input {
+    width: 80%;
 }
