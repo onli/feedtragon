@@ -1,0 +1,16 @@
+<section id="unsubscribeForm">
+    <h2>Unsubscribe</h2>
+    <form method="POST" action="<%= url_for '/unsubscribe' %>">
+    <ol id="unsubscribeList">
+    <% feeds.each do |feed|  %>
+        <label for="feeds[<%= feed.id.to_s %>]">
+        <li>
+            <input type="checkbox" id="feeds[<%= feed.id.to_s %>]" name="feeds[<%= feed.id.to_s %>]" />
+            <%= truncate(feed.name, 75, "...") %>
+        </li>
+        </label>
+    <% end %>
+    </ol>
+    <button type="submit">Unsubscribe</button>
+    </form>
+</section>

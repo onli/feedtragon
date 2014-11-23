@@ -88,7 +88,7 @@ textarea {
     padding-left: 23em;
 }
 
-#entries li {
+#entryList li {
     max-width: 700px;
     padding-left: 1em;
     list-style-type: none;
@@ -121,16 +121,6 @@ textarea {
     color: #8DCC14;
 }
 
-.unsubscribe {
-    display: inline;
-    visibility: hidden;
-    vertical-align: baseline;
-}
-
-.feedlink:hover .unsubscribe {
-    visibility: visible !important;
-}
-
 #addLink {
     font-size: 1.4em;
     font-weight: bold;
@@ -139,9 +129,13 @@ textarea {
     color: #3B5998;
 }
 
+#unsubscribeForm,
 #addForms  {
-    padding-left: 2em;
     padding-top: 2em;
+    padding-left: 2em;
+}
+
+#addForms  {
     display: table;
     table-layout: fixed;
 }
@@ -171,4 +165,13 @@ textarea {
 
 #addForms input {
     width: 80%;
+}
+
+#unsubscribeList {
+    margin-left: 1em;
+}
+
+#unsubscribeForm button {
+    margin-bottom: 2em;
+    margin-left: 1em;
 }

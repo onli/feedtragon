@@ -17,7 +17,7 @@
                         <% end %>
                         <button type="submit" title="Mark all as read">&#10003;</button>
                     </form>
-                    <ol>
+                    <ol id="entryList">
                     <% entries.each do |entry| %>
                         <%= erb :entry, :locals => {:entry => entry} %>
                     <% end %>
@@ -27,6 +27,7 @@
             <% if showSettings %>
                 <main id="entries">
                     <%= erb :addForm %>
+                    <%= erb :unsubscribeForm, :locals => {:feeds => feeds} %>
                 </main>
             <% end %>
         <% end %>  

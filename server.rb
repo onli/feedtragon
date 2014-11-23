@@ -80,11 +80,17 @@ post '/subscribe' do
     redirect to('/')
 end
 
-post %r{/([0-9]+)/unsubscribe} do |id|
-    feed = Feed.new(id: id)
-    Rack::Superfeedr.unsubscribe(feed.url, id)
-    feed.unsubscribed!
-    redirect to('/')
+post '/unsubscribe' do
+    begin
+        params["feeds"].each do |id, _|
+            feed = Feed.new(id: id)
+            Rack::Superfeedr.unsubscribe(feed.url, id)
+            feed.unsubscribed!
+        end
+    rescue => error
+        warn "unsubscribe: #{error}"
+    end
+    redirect url_for '/settings'
 end
 
 post '/import' do
@@ -94,7 +100,7 @@ post '/import' do
     doc.xpath("/opml/body/outline").map do |outline|
         subscribe(url: outline.attr("xmlUrl"), name: outline.attr("title"))
     end
-    redirect to('/')
+    redirect url_for '/'
 end
 
 def subscribe(url:, name:)
@@ -133,7 +139,7 @@ post '/readall' do
     protected!
     params[:ids].each {|id| Entry.new(id: id).read!} if params[:ids]
     Database.new.readall if params[:all]
-    redirect to('/')
+    redirect url_for '/'
 end
 
 get %r{/([0-9]+)/feedlink} do |id|
@@ -157,7 +163,7 @@ post '/addSuperfeedr' do
     db.setOption("superfeedrPassword", params["password"])
     db.setOption("secret", SecureRandom.urlsafe_base64(256))
     loadConfiguration()
-    redirect to('/')
+    redirect url_for '/'
 end
 
 websocket '/updated' do
@@ -172,7 +178,7 @@ websocket '/updated' do
     "Done"
 end
 
-get '/add' do
+get '/settings' do
     erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => nil, :current_feed_id => nil, :showSettings => true}
 end
 
