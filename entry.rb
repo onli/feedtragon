@@ -42,6 +42,7 @@ class Entry
 
     # see http://stackoverflow.com/a/15910738/2508518
     def contentWithAbsLinks
+        return if ! self.content
         blog_uri = URI.parse(self.url)
         # we are guessing here that relative links can be transformed to absolute urls
         # using the adress of the blog itself. This might fail.
@@ -57,12 +58,15 @@ class Entry
             url_param = tags[node.name]
 
             src = node[url_param]
-            unless (src.empty?)
-                uri = URI.parse(src)
+            unless (src.nil? || src.empty?)
+                uri = URI.parse(URI.escape(src))
                 unless uri.host
-                    uri.scheme = blog_uri.scheme
-                    uri.host = blog_uri.host
-                    node[url_param] = uri.to_s
+                    begin
+                        uri.scheme = blog_uri.scheme
+                        uri.host = blog_uri.host
+                        node[url_param] = uri.to_s
+                    rescue URI::InvalidURIError => e
+                    end
                 end
             end
         end
