@@ -59,14 +59,14 @@ class Entry
 
             src = node[url_param]
             unless (src.nil? || src.empty?)
-                uri = URI.parse(URI.escape(src))
-                unless uri.host
-                    begin
+                begin
+                    uri = URI.parse(URI.escape(src))
+                    unless uri.host
                         uri.scheme = blog_uri.scheme
                         uri.host = blog_uri.host
                         node[url_param] = uri.to_s
-                    rescue URI::InvalidURIError => e
                     end
+                rescue URI::InvalidURIError => e
                 end
             end
         end
