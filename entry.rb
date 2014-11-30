@@ -41,12 +41,13 @@ class Entry
     end
 
     # see http://stackoverflow.com/a/15910738/2508518
+    # we are guessing here that relative links can be transformed to absolute urls
+    # using the adress of the blog itself. This might fail.
     def contentWithAbsLinks
         return if ! self.content
-        blog_uri = URI.parse(self.url)
-        # we are guessing here that relative links can be transformed to absolute urls
-        # using the adress of the blog itself. This might fail.
-
+        return content if ! self.url
+        blog_uri = URI.parse(URI.escape(self.url))
+        
         tags = {
           'img'    => 'src',
           'a'      => 'href'
