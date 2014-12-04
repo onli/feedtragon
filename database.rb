@@ -31,6 +31,12 @@ class Database
                                 read INTEGER DEFAULT 0,
                                 FOREIGN KEY (feed) REFERENCES feeds(id) ON DELETE CASCADE
                                 );"
+                @@db.execute "CREATE TABLE IF NOT EXISTS markers (
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                entry INTEGER UNIQUE,
+                                comment TEXT,
+                                FOREIGN KEY (entry) REFERENCES entries(id) ON DELETE CASCADE
+                                );"
                 @@db.execute "CREATE TABLE IF NOT EXISTS log (
                     name TEXT,
                     log TEXT
@@ -85,6 +91,18 @@ class Database
             warn "setRead: #{error}"
         end
     end
+
+     def setMark(status, entry)
+        begin
+            if status
+                @@db.execute("INSERT OR IGNORE INTO markers(entry) VALUES (?)", entry.id.to_i)
+            else
+                @@db.execute("DELETE FROM markers WHERE entry == ?", entry.id.to_i)
+            end
+        rescue => error
+            warn "setMark: #{error}"
+        end
+    end
     
     def addEntry(entry, feed)
         begin
@@ -112,6 +130,27 @@ class Database
         rescue => error
             warn "getEntries: #{error}"
         end
+    end
+
+    def getMarkedEntries()
+        begin
+            entries = []
+            @@db.execute("SELECT url, title, content, entries.id FROM entries JOIN markers ON (entries.id = markers.entry)") do |row|
+                entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: nil))
+            end
+            return entries
+        rescue => error
+            warn "getMarkedEntries: #{error}"
+        end
+    end
+
+    def marked?(entry)
+        begin
+            return @@db.execute("SELECT id FROM markers WHERE entry == ?", entry.id)[0] != nil
+        rescue => error
+            warn "marked?: #{error}"
+        end
+        return false
     end
 
     def getFeeds()

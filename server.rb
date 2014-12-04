@@ -135,6 +135,18 @@ post %r{/([0-9]+)/unread} do |id|
     return id
 end
 
+post %r{/([0-9]+)/mark} do |id|
+    protected!
+    Entry.new(id: id).mark!
+    return id
+end
+
+post %r{/([0-9]+)/unmark} do |id|
+    protected!
+    Entry.new(id: id).unmark!
+    return id
+end
+
 post '/readall' do
     protected!
     params[:ids].each {|id| Entry.new(id: id).read!} if params[:ids]
@@ -180,6 +192,10 @@ end
 
 get '/settings' do
     erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => nil, :current_feed_id => nil, :showSettings => true}
+end
+
+get '/marked' do
+    erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => Database.new.getMarkedEntries, :current_feed_id => 'marked', :showSettings => false}
 end
 
 get '/' do

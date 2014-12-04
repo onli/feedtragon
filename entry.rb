@@ -36,6 +36,18 @@ class Entry
         Database.new.setRead(true, self)
     end
     
+    def mark!
+        Database.new.setMark(true, self)
+    end
+
+    def marked?
+        return Database.new.marked?(self)
+    end
+
+    def unmark!
+        Database.new.setMark(false, self)
+    end
+    
     def unread!
         Database.new.setRead(false, self)
     end
