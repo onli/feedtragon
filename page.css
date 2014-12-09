@@ -1,0 +1,94 @@
+html {
+    font-family: 'Ubuntu', sans-serif;
+    font-weight: 400;
+    background-color: #F7F7F7;
+    color: #333;
+}
+
+body {
+    margin: auto;
+    width: 90%;
+}
+
+img {
+    max-width: 700px;
+    height: auto;
+}
+
+*, *:before, *:after {
+    -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+}
+
+a {
+    color: #3B5998;
+    text-decoration: none;
+}
+
+a:visited {
+    color: #8496bc;
+}
+
+#header {
+    text-align: center;
+}
+
+header {
+    display: block;
+    text-align: left;
+    margin: auto;
+    max-width: 700px;
+    height: 100%;
+}
+
+h1 {
+    font-size: 2em;
+    margin-bottom: 0.66em;
+    font-weight: normal;
+}
+
+h2 {
+    margin-top: 0;
+    font-size: 1.5em;
+    font-weight: normal;
+}
+
+#logo {
+    display: block;
+    max-height: 5em;
+    float: left;
+    position: relative;
+    right: 0.5em;
+}
+
+#preview {
+    display: display-block;
+    border: 2px solid grey;
+}
+
+#features {
+    text-align: center;
+    margin-top: 2em;
+    padding-bottom: 2em;
+}
+
+#features h2 {
+    text-align: left;
+    max-width: 700px;
+    margin: auto;
+}
+
+#features dl {
+    max-width: 700px;
+    text-align: left;
+    margin: auto;
+    margin-top: 1em;
+}
+
+dt {
+    font-size: 1.2em;
+    margin-top: 0.9em;
+}
+
+dd {
+    margin-top: 0.3em;
+}
