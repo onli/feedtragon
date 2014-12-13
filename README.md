@@ -1,6 +1,6 @@
 **feedtragón** is a small self-hosted RSS-reader. Instead of polling feeds on its own, it is using [superfeedr](https://superfeedr.com) to get updates of subscribed feeds.
 
-![feedtragon alpha screenshot](https://www.onli-blogging.de/uploads/feedtragon_alpha1.png)
+![feedtragon screenshot](https://www.onli-blogging.de/uploads/feedtragon_screenshot_tiny.png)
 
 # Installation
 
