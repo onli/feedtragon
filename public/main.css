@@ -88,7 +88,7 @@ textarea {
     padding-left: 23em;
 }
 
-#entryList li {
+#entryList > li {
     max-width: 700px;
     padding-left: 1em;
     list-style-type: none;
