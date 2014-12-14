@@ -25,4 +25,5 @@
     <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32">
     <meta name="msapplication-TileColor" content="#00a300">
     <meta name="msapplication-TileImage" content="/mstile-144x144.png">
+    <% if current_feed_id == 'marked' %><link rel="alternate"  type="application/rss+xml" href="<%= url_for "/" + secret_url.to_s + '/feed' %>" title="Marked Articles"><% end %>
 </head>

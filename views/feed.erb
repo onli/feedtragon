@@ -1,0 +1,27 @@
+<%# -*- encoding : utf-8 -*- %>
+<?xml version="1.0" encoding="utf-8" ?>
+
+<rss version="2.0"
+    xmlns:atom="http://www.w3.org/2005/Atom"
+    xmlns:content="http://purl.org/rss/1.0/modules/content/"
+   >
+    <channel>
+        <title>Marked Articles</title>
+        <link><%= url_for '/', :full %></link>
+        <description></description>
+        <generator>feedtragón</generator>
+        <atom:link href="<%= url_for '/feed' %>" rel="self" type="application/rss+xml" />
+
+        <% entries.each do |entry| %>
+            <item>
+                <title><%= entry.title %></title>
+                <link>entry.url</link>
+                <content:encoded>
+                    <%= h entry.contentWithAbsLinks %>
+                </content:encoded>
+                <guid><%= entry.id.to_s %></guid>
+            </item>
+        <% end %>
+
+    </channel>
+</rss>

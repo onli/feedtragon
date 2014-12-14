@@ -12,6 +12,7 @@ require 'sinatra/url_for'
 require 'sinatra/browserid'
 require 'sinatra/hijacker'
 require 'nokogiri'
+include ERB::Util
 use Rack::Session::Pool
 register Sinatra::Hijacker
 
@@ -34,6 +35,10 @@ helpers do
     def truncate(text, length, append)
         return text.gsub(/^(.{#{length},}?).*$/m,'\1' + append)
     end
+
+    def secret_url
+        gen_secret_url
+    end
 end
 
 def loadConfiguration()
@@ -41,6 +46,14 @@ def loadConfiguration()
     Rack::Superfeedr.host = db.getOption("host")
     Rack::Superfeedr.login = db.getOption("superfeedrName")
     Rack::Superfeedr.password = db.getOption("superfeedrPassword")
+end
+
+def gen_secret_url()
+    begin
+        return Digest::RMD160.new << Database.new.getOption("secret")
+    rescue TypeError
+        return ""
+    end
 end
 
 configure do
@@ -161,6 +174,12 @@ end
 get %r{/([0-9]+)/entry} do |id|
     protected!
     erb :entry, :locals => {:entry => Entry.new(id: id)}
+end
+
+get %r{/(.*)/feed} do |feed_url|
+    halt 404 if feed_url != gen_secret_url.to_s
+    headers "Content-Type"   => "application/rss+xml"
+    erb :feed, :locals => {:entries => Database.new.getMarkedEntries}
 end
 
 get %r{/([0-9]+)} do |id|
