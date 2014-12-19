@@ -14,6 +14,7 @@ require 'sinatra/hijacker'
 require 'nokogiri'
 include ERB::Util
 use Rack::Session::Pool
+set :browserid_login_button, "/browserid.png"
 register Sinatra::Hijacker
 
 websockets = []

@@ -47,7 +47,20 @@ textarea {
 /* specifics */
 
 #login {
-    padding-left: 1em;
+    max-width: 20em;
+    margin: auto;
+    margin-top: 20%;
+}
+
+#login #logo {
+    max-height: 5em;
+    float: left;
+    position: relative;
+    right: 0.5em;
+}
+
+#login h1 {
+    font-weight: 400;
 }
 
 #feeds {

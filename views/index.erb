@@ -5,7 +5,13 @@
 
     <body>
         <% if ! isAdmin? %>
-            <section id="login"><p>Please sign in:</p> <%= render_login_button %></section>
+            <main id="login">
+                <img src="<%= url_for '/mstile-144x144.png' %>" id="logo">
+                <div>
+                    <h1>Login</h1>
+                    <%= render_login_button %>
+                </div>
+        </main>
         <% else %>
             <%= erb :feedlist, :locals => {:feeds => feeds, :current_feed_id => current_feed_id} %>
 
