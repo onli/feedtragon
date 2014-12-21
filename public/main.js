@@ -85,6 +85,17 @@
                 } else {
                     n.Entry.markRead(entryId);
                 }
+            },
+            toggleMarkButton: function(entryId) {
+                var form = document.querySelector('#entry_' + entryId + ' .mark');
+                var button = form.querySelector('button');
+                if (form.action.endsWith('/mark')) {
+                    form.action = form.action.replace(/mark/, 'unmark');
+                    button.innerHTML = '&#9733;';
+                } else {
+                    form.action = form.action.replace('un', '');
+                    button.innerHTML = '&#9734;';
+                }
             }
         },
         Feed: {
@@ -151,6 +162,23 @@
             }
         }
     }
+    
+    function ajaxifyForm(selector, callback) {
+        document.querySelectorAll(selector).forEach(function(el) {
+            el.addEventListener('submit', function(evt) {
+               evt.preventDefault();
+               var http = new XMLHttpRequest();
+                
+                http.onreadystatechange = function() {
+                    if (http.readyState == 4 && http.status == 200) {
+                        callback(http);
+                    }
+                }
+                http.open(evt.target.method, evt.target.action, true);
+                http.send();
+            });
+        });
+    }
 
     document.addEventListener('DOMContentLoaded', function() {
         n.Entry.checkRead(true);
@@ -174,7 +202,8 @@
                                         if (evt.which == 86) { n.Entry.openCurrent(); } // v
                                         if (evt.which == 77) { n.Entry.toggleRead(n.Entry.current_entry); } // m
                                     }
-        );
+        ); 
+        ajaxifyForm('.mark', function(http) { n.Entry.toggleMarkButton(http.response) });
     });
 
     if (document.readyState == 'complete' || document.readyState == 'loaded' || document.readyState == 'interactive') {
