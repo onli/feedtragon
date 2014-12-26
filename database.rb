@@ -136,9 +136,18 @@ class Database
     def getMarkedEntries(startId)
         begin
             entries = []
-            startId ||= 0
-            @@db.execute("SELECT url, title, content, entries.id FROM entries JOIN markers ON (entries.id = markers.entry)") do |row|
-                entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: nil))
+            if startId
+                # the markers table has their own id order that needs to be mapped from the entry id
+                startId = @@db.execute("SELECT id FROM markers WHERE entry = ? LIMIT 1", startId)[0]["id"]  
+                @@db.execute("SELECT url, title, content, entries.id FROM entries JOIN markers ON (entries.id = markers.entry) 
+                                WHERE markers.id < ?
+                              ORDER BY markers.id DESC LIMIT 10", startId) do |row|
+                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: nil))
+                end
+            else 
+                  @@db.execute("SELECT url, title, content, entries.id FROM entries JOIN markers ON (entries.id = markers.entry) ORDER BY markers.id DESC LIMIT 10") do |row|
+                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: nil))
+                end
             end
             return entries
         rescue => error

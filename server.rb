@@ -180,7 +180,7 @@ end
 get %r{/(.*)/feed} do |feed_url|
     halt 404 if feed_url != gen_secret_url.to_s
     headers "Content-Type"   => "application/rss+xml"
-    erb :feed, :locals => {:entries => Database.new.getMarkedEntries}
+    erb :feed, :locals => {:entries => Database.new.getMarkedEntries(nil)}
 end
 
 get %r{/([0-9]+)} do |id|
@@ -215,7 +215,7 @@ get '/settings' do
 end
 
 get '/marked' do
-    erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => Database.new.getMarkedEntries, :current_feed_id => 'marked', :showSettings => false}
+    erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => Database.new.getMarkedEntries(params[:startId]), :current_feed_id => 'marked', :showSettings => false}
 end
 
 get '/' do
