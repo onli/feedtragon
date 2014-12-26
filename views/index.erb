@@ -15,25 +15,7 @@
         <% else %>
             <%= erb :feedlist, :locals => {:feeds => feeds, :current_feed_id => current_feed_id} %>
 
-            <% if entries %>
-                <main id="entries" data-feedid="<%= current_feed_id %>">
-                    <form id="readall" method="POST" action="<%= url_for '/readall' %>">
-                        <% entries.each do |entry| %>
-                            <input type="hidden" name="ids[]" value="<%= entry.id %>" />
-                        <% end %>
-                        <button type="submit" title="Mark all as read">&#10003;</button>
-                    </form>
-                    <ol id="entryList">
-                    <% entries.each do |entry| %>
-                        <%= erb :entry, :locals => {:entry => entry} %>
-                    <% end %>
-                    <% if ! entries.empty? && entries.size == 10 %>
-                        <li><a href="<%= url_for '/' + current_feed_id.to_s + '?startId='+ entries.last.id.to_s %>">Load more</a></li>
-                    <% end %>
-                    </ol>
-                    
-                </main>
-            <% end %>
+            <%= erb :entrylist, :locals => {:entries => entries, :current_feed_id => current_feed_id} if entries %>
             <% if showSettings %>
                 <main id="entries">
                     <%= erb :addForm %>

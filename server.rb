@@ -172,9 +172,18 @@ get %r{/([0-9]+)/feedlink} do |id|
     protected!
     erb :feedlink, :locals => {:feed => Feed.new(id: id), :current_feed_id => nil}
 end
+
 get %r{/([0-9]+)/entry} do |id|
     protected!
     erb :entry, :locals => {:entry => Entry.new(id: id)}
+end
+
+get %r{/([0-9]+)/entries} do |feed_id|
+    protected!
+    puts params.to_s
+    entries = []
+    Feed.new(id: feed_id).entries(startId: params[:startId]).each{|entry| entries.push(erb :entry, :locals => {:entry => entry})}
+    {:entries => entries}.to_json
 end
 
 get %r{/(.*)/feed} do |feed_url|

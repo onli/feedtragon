@@ -127,17 +127,7 @@
                 
                         http_.onreadystatechange = function() {
                             if (http_.readyState == 4 && http_.status == 200) {
-                                var oldScrollPos = window.pageYOffset || document.documentElement.scrollTop; // we need to restore the scrollbar position later
-                                
-                                var range = document.createRange();
-                                var newEntry = range.createContextualFragment(http_.response);
-                                var entryList = document.querySelector('main ol');
-                                entryList.insertBefore(newEntry, entryList.firstChild);
-                                
-                                newEntry = entryList.querySelector('#entry_' + new_entry);
-                                var marginTop = window.getComputedStyle(newEntry).marginTop;
-                                // the margin is not part of height, so it needs to be added
-                                window.scrollTo(0, oldScrollPos + newEntry.scrollHeight +  parseInt(marginTop.substring(0, marginTop.indexOf('px'))));
+                                n.Feed.appendEntry(http_.response);
                             }
                         }
                         http_.open('GET','/' + new_entry + '/entry', true);
@@ -159,6 +149,30 @@
                 } else {
                     window.location = document.querySelector('.feedlink:last-child a').href;
                 }
+            },
+            appendEntry: function(entry) {
+                document.querySelector('main ol').appendChild(document.createRange().createContextualFragment(entry));
+
+            },
+            loadMoreEntries: function() {
+                var http = new XMLHttpRequest();
+                
+                http.onreadystatechange = function() {
+                    if (http.readyState == 4 && http.status == 200) {
+                        var entries = JSON.parse(http.response)['entries'];
+                        entries.forEach(function(entry) {
+                            n.Feed.appendEntry(entry);
+                        });
+                        if (entries.length == 10) {
+                            var allReads = document.querySelectorAll('.read');
+                            document.querySelector('#moreEntries').dataset['start_id'] = allReads[allReads.length - 1].dataset['entryid'];
+                        } else {
+                            document.querySelector('#moreEntries').remove();
+                        }
+                    }
+                }
+                http.open('GET','/' + n.Feed.current_feed + '/entries?startId=' + document.querySelector('#moreEntries').dataset['start_id'], true);
+                http.send();
             }
         }
     }
@@ -204,6 +218,10 @@
                                     }
         ); 
         ajaxifyForm('.mark', function(http) { n.Entry.toggleMarkButton(http.response) });
+        document.querySelector('#moreEntries').addEventListener('click', function(evt) {
+            evt.preventDefault();
+            n.Feed.loadMoreEntries();
+        });
     });
 
     if (document.readyState == 'complete' || document.readyState == 'loaded' || document.readyState == 'interactive') {
