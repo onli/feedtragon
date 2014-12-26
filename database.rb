@@ -120,10 +120,11 @@ class Database
         end
     end
 
-    def getEntries(feed)
+    def getEntries(feed, startId)
         begin
             entries = []
-            @@db.execute("SELECT url, title, content, id FROM entries WHERE feed = ? AND read = 0;", feed.id.to_i) do |row|
+            startId ||= 0
+            @@db.execute("SELECT url, title, content, id FROM entries WHERE feed = ? AND read = 0 AND id > ? LIMIT 10;", feed.id.to_i, startId.to_i) do |row|
                 entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: feed.id.to_i))
             end
             return entries
@@ -132,9 +133,10 @@ class Database
         end
     end
 
-    def getMarkedEntries()
+    def getMarkedEntries(startId)
         begin
             entries = []
+            startId ||= 0
             @@db.execute("SELECT url, title, content, entries.id FROM entries JOIN markers ON (entries.id = markers.entry)") do |row|
                 entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: nil))
             end
@@ -227,7 +229,7 @@ class Database
 
     def readall
         begin
-            @@db.execute("UPDATE entries SET read = 1")
+            @@db.execute("UPDATE entries SET read = 1 WHERE read = 0")
         rescue => error
             warn "readall: #{error}"
         end

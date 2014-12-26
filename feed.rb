@@ -51,8 +51,8 @@ class Feed
         Database.new.setSubscribe(false, self)
     end
 
-    def entries
-        Database.new.getEntries(self)
+    def entries(startId: 0)
+        Database.new.getEntries(self, startId)
     end
 
     def setName(name:)

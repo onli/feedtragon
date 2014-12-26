@@ -184,7 +184,7 @@ get %r{/(.*)/feed} do |feed_url|
 end
 
 get %r{/([0-9]+)} do |id|
-    erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => Feed.new(id: id).entries, :current_feed_id => id, :showSettings => false}
+    erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => Feed.new(id: id).entries(startId: params[:startId]), :current_feed_id => id, :showSettings => false}
 end
 
 post '/addSuperfeedr' do
