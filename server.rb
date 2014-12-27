@@ -178,11 +178,15 @@ get %r{/([0-9]+)/entry} do |id|
     erb :entry, :locals => {:entry => Entry.new(id: id)}
 end
 
-get %r{/([0-9]+)/entries} do |feed_id|
+get %r{/(.*)/entries} do |feed_id|
     protected!
-    puts params.to_s
     entries = []
-    Feed.new(id: feed_id).entries(startId: params[:startId]).each{|entry| entries.push(erb :entry, :locals => {:entry => entry})}
+    if (feed_id == "marked")
+        feed_entries = Database.new.getMarkedEntries(params[:startId])
+    else 
+        feed_entries = Feed.new(id: feed_id).entries(startId: params[:startId])
+    end
+    feed_entries.each{|entry| entries.push(erb :entry, :locals => {:entry => entry})}
     {:entries => entries}.to_json
 end
 

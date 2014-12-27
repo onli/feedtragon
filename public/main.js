@@ -225,7 +225,7 @@
         addEventListener('scroll', function() {
                                             n.Entry.checkCurrent();
                                             n.Entry.checkRead(false);
-                                            //~ n.Feed.checkLoadMore();
+                                            n.Feed.checkLoadMore();
                                         }
         );
         addEventListener('keyup', function(evt) {
