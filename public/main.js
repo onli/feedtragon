@@ -100,6 +100,8 @@
         },
         Feed: {
             current_feed: 0,
+            loading_more: false,
+            check_block: false,
             getUpdates: function() {
                 var socket = new WebSocket('ws://' + location.host + '/updated' );
                 
@@ -155,24 +157,41 @@
 
             },
             loadMoreEntries: function() {
-                var http = new XMLHttpRequest();
-                
-                http.onreadystatechange = function() {
-                    if (http.readyState == 4 && http.status == 200) {
-                        var entries = JSON.parse(http.response)['entries'];
-                        entries.forEach(function(entry) {
-                            n.Feed.appendEntry(entry);
-                        });
-                        if (entries.length == 10) {
-                            var allReads = document.querySelectorAll('.read');
-                            document.querySelector('#moreEntries').dataset['start_id'] = allReads[allReads.length - 1].dataset['entryid'];
-                        } else {
-                            document.querySelector('#moreEntries').remove();
+                if (! n.Feed.loading_more) {
+                    n.Feed.loading_more = true;
+                    var http = new XMLHttpRequest();
+                    
+                    http.onreadystatechange = function() {
+                        if (http.readyState == 4 && http.status == 200) {
+                            var entries = JSON.parse(http.response)['entries'];
+                            entries.forEach(function(entry) {
+                                n.Feed.appendEntry(entry);
+                            });
+                            if (entries.length == 10) {
+                                var allReads = document.querySelectorAll('.read');
+                                document.querySelector('#moreEntries').dataset['start_id'] = allReads[allReads.length - 1].dataset['entryid'];
+                            } else {
+                                document.querySelector('#moreEntries').remove();
+                            }
+                            n.Feed.loading_more = false;
                         }
                     }
+                    http.open('GET','/' + n.Feed.current_feed + '/entries?startId=' + document.querySelector('#moreEntries').dataset['start_id'], true);
+                    http.send();
                 }
-                http.open('GET','/' + n.Feed.current_feed + '/entries?startId=' + document.querySelector('#moreEntries').dataset['start_id'], true);
-                http.send();
+            },
+            checkLoadMore: function() {
+                if (! n.Feed.check_block) {
+                    n.Feed.check_block = true;
+                    setTimeout(function() { n.Feed.check_block = false; }, 300);
+                    var scrollPos = window.pageYOffset || document.documentElement.scrollTop;
+                    var viewportHeight = Math.max(document.documentElement.clientHeight, window.innerHeight || 0)
+                    var totalHeight = (document.height !== undefined) ? document.height : document.body.offsetHeight;
+
+                    if (scrollPos + viewportHeight >= totalHeight - viewportHeight && document.querySelector('#moreEntries')) {
+                        n.Feed.loadMoreEntries();
+                    }
+                }
             }
         }
     }
@@ -206,6 +225,7 @@
         addEventListener('scroll', function() {
                                             n.Entry.checkCurrent();
                                             n.Entry.checkRead(false);
+                                            //~ n.Feed.checkLoadMore();
                                         }
         );
         addEventListener('keyup', function(evt) {
@@ -218,10 +238,13 @@
                                     }
         ); 
         ajaxifyForm('.mark', function(http) { n.Entry.toggleMarkButton(http.response) });
-        document.querySelector('#moreEntries').addEventListener('click', function(evt) {
-            evt.preventDefault();
-            n.Feed.loadMoreEntries();
-        });
+        var more = document.querySelector('#moreEntries');
+        if (more) {
+            more.addEventListener('click', function(evt) {
+                evt.preventDefault();
+                n.Feed.loadMoreEntries();
+            });
+        }
     });
 
     if (document.readyState == 'complete' || document.readyState == 'loaded' || document.readyState == 'interactive') {

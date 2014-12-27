@@ -204,3 +204,17 @@ textarea {
     margin-bottom: 2em;
     margin-left: 1em;
 }
+
+#moreEntries {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background-color: rgba(0,0,0, 0.1);
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+    margin: auto;
+}
+
+#moreEntries:hover {
+     background-color: rgba(100,100,100, 0.1);
+}
