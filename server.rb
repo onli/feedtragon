@@ -13,7 +13,7 @@ require 'sinatra/browserid'
 require 'sinatra/hijacker'
 require 'nokogiri'
 include ERB::Util
-use Rack::Session::Pool
+use Rack::Session::Pool, :expire_after => 2628000
 set :browserid_login_button, "/browserid.png"
 register Sinatra::Hijacker
 
