@@ -68,7 +68,7 @@ textarea {
     position: fixed;
     vertical-align: top;
     max-width: 20%;
-    min-width: 23em;
+    min-width: 21em;
     height: 100%;
     overflow: auto;
     box-shadow: 3px 3px 5px 0px #ccc;
