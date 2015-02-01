@@ -41,6 +41,8 @@ class Database
                     name TEXT,
                     log TEXT
                 )";
+                @@db.execute "CREATE INDEX IF NOT EXISTS entries_read_idx ON entries(read);"
+                @@db.execute "CREATE INDEX IF NOT EXISTS entries_feed_idx ON entries(feed);"
                 @@db.execute "PRAGMA foreign_keys = ON;"
                 @@db.results_as_hash = true
             rescue => error
