@@ -109,6 +109,11 @@ textarea {
     margin-top: 3em;
 }
 
+.entry pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
 #superfeedr li {
     list-style-type: none;
 }
