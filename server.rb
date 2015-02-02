@@ -197,7 +197,7 @@ get %r{/(.*)/feed} do |feed_url|
 end
 
 get %r{/([0-9]+)} do |id|
-    erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => Feed.new(id: id).entries(startId: params[:startId]), :current_feed_id => id, :showSettings => false}
+    erb :index, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true), :entries => Feed.new(id: id).entries(startId: params[:startId]), :current_feed_id => id, :showSettings => false}
 end
 
 post '/addSuperfeedr' do
@@ -236,7 +236,7 @@ get '/' do
         Database.new.addUser('admin', authorized_email) if ! authorized_email.nil?
         erb :installer
     else
-        erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => nil, :current_feed_id => nil, :showSettings => false}
+        erb :index, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true), :entries => nil, :current_feed_id => nil, :showSettings => false}
     end
 end
 

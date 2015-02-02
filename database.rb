@@ -166,11 +166,17 @@ class Database
         return false
     end
 
-    def getFeeds()
+    def getFeeds(onlyUnread: true)
         begin
             feeds = []
-            @@db.execute("SELECT url, id, name FROM feeds;") do |row|
-                feeds.push(Feed.new(url: row["url"], name: row["name"], id: row["id"]))
+            if onlyUnread
+                @@db.execute("SELECT DISTINCT feeds.url, feeds.id, feeds.name FROM feeds JOIN entries ON (entries.feed = feeds.id) WHERE entries.read = 0;") do |row|
+                    feeds.push(Feed.new(url: row["url"], name: row["name"], id: row["id"]))
+                end
+            else
+                @@db.execute("SELECT url, id, name FROM feeds;") do |row|
+                    feeds.push(Feed.new(url: row["url"], name: row["name"], id: row["id"]))
+                end
             end
             return feeds
         rescue => error
