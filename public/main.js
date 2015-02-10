@@ -58,7 +58,7 @@
                         if (el.isVisible()) {
                             var entryTop = el.getBoundingClientRect().top;
                             if (entryTop >= n.Entry.current_marker_top) {
-                               n.Entry.current_entry = el.querySelector('.read').dataset['entryid'];
+                               n.Entry.setCurrent(el.querySelector('.read').dataset['entryid']);
                             }
                         };
                     });
@@ -66,11 +66,11 @@
             },
             goto: function(nextEntry) {
                 n.Entry.markRead(n.Entry.current_entry);
-                n.Entry.current_entry = nextEntry.querySelector('.read').dataset['entryid'];
+                n.Entry.setCurrent(nextEntry.querySelector('.read').dataset['entryid']);
                 nextEntry.scrollIntoView();
             },
             gotoNext: function() {
-                n.Entry.goto(document.querySelector('#entry_' + n.Entry.current_entry + ' + li'));
+                n.Entry.goto(document.querySelector('#entry_' + n.Entry.current_entry + " + .entry" ));
             },
             gotoPrev: function() {
                 // the doubled previousChild is necessary because it also returns textnodes, there seems to be no alternative
@@ -96,6 +96,13 @@
                     form.action = form.action.replace('un', '');
                     button.innerHTML = '&#9734;';
                 }
+            },
+            setCurrent: function(entryId) {
+                n.Entry.current_entry = entryId;
+                try {
+                    document.querySelector('.entry.current').classList.remove('current');
+                } catch(e if e instanceof TypeError) {}
+                document.querySelector('#entry_' + entryId).classList.add('current');
             }
         },
         Feed: {
@@ -219,7 +226,7 @@
         var main = document.querySelector('main');
         if (main) {
             n.Feed.current_feed = main.dataset['feedid'];
-            n.Entry.current_entry = main.querySelector('.read').dataset['entryid'];
+            n.Entry.setCurrent(main.querySelector('.read').dataset['entryid']);
         }
 
         addEventListener('scroll', function() {
