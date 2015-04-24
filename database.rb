@@ -259,4 +259,12 @@ class Database
             warn "setName: #{error}"
         end
     end
+
+    def delete(feed)
+        begin
+            @@db.execute("DELETE FROM feeds WHERE id = ?", feed.id.to_i)
+        rescue => error
+            warn "delete feed: #{error}"
+        end
+    end
 end
