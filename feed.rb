@@ -51,10 +51,6 @@ class Feed
         Database.new.setSubscribe(false, self)
     end
 
-    def delete!
-        Database.new.delete(self)
-    end
-
     def entries(startId: 0)
         Database.new.getEntries(self, startId)
     end

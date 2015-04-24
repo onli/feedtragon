@@ -105,7 +105,6 @@ post '/unsubscribe' do
             feed = Feed.new(id: id)
             Rack::Superfeedr.unsubscribe(feed.url, id)
             feed.unsubscribed!
-            feed.delete!
         end
     rescue => error
         warn "unsubscribe: #{error}"
