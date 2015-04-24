@@ -5,7 +5,7 @@
     <body>
         <% if ! isAdmin? %>
             <main id="login">
-                <img src="<%= url_for '/mstile-144x144.png' %>" id="logo">
+                <img src="<%= url '/mstile-144x144.png' %>" id="logo">
                 <div>
                     <h1>Login</h1>
                     <%= render_login_button %>

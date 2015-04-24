@@ -8,7 +8,6 @@ require './database.rb'
 require 'sinatra'
 require 'rack-superfeedr'
 require 'json'
-require 'sinatra/url_for'
 require 'sinatra/browserid'
 require 'sinatra/hijacker'
 require 'nokogiri'
@@ -91,7 +90,7 @@ end
 post '/subscribe' do
     protected!
     subscribe(url: params[:url], name: params[:url])
-    redirect to('/')
+    redirect url '/'
 end
 
 post '/unsubscribe' do
@@ -105,7 +104,7 @@ post '/unsubscribe' do
     rescue => error
         warn "unsubscribe: #{error}"
     end
-    redirect url_for '/settings'
+    redirect url '/settings'
 end
 
 post '/import' do
@@ -115,7 +114,7 @@ post '/import' do
     doc.xpath("/opml/body/outline").map do |outline|
         subscribe(url: outline.attr("xmlUrl"), name: outline.attr("title"))
     end
-    redirect url_for '/'
+    redirect url '/'
 end
 
 def subscribe(url:, name:)
@@ -166,7 +165,7 @@ post '/readall' do
     protected!
     params[:ids].each {|id| Entry.new(id: id).read!} if params[:ids]
     Database.new.readall if params[:all]
-    redirect url_for '/'
+    redirect url '/'
 end
 
 get %r{/([0-9]+)/feedlink} do |id|
@@ -199,7 +198,7 @@ post '/addSuperfeedr' do
     db.setOption("superfeedrPassword", params["password"])
     db.setOption("secret", SecureRandom.urlsafe_base64(256))
     loadConfiguration()
-    redirect url_for '/'
+    redirect url '/'
 end
 
 websocket '/updated' do

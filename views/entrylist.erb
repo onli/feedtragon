@@ -1,5 +1,5 @@
 <main id="entries" data-feedid="<%= current_feed_id %>">
-    <form id="readall" method="POST" action="<%= url_for '/readall' %>">
+    <form id="readall" method="POST" action="<%= url '/readall' %>">
         <% entries.each do |entry| %>
             <input type="hidden" name="ids[]" value="<%= entry.id %>" />
         <% end %>
@@ -11,7 +11,7 @@
     <% end %>
     </ol>
     <% if ! entries.empty? && entries.size == 10 %>
-        <a id="moreEntries" data-start_id="<%= entries.last.id.to_s %>" href="<%= url_for '/' + current_feed_id.to_s + '?startId='+ entries.last.id.to_s %>">
+        <a id="moreEntries" data-start_id="<%= entries.last.id.to_s %>" href="<%= url '/' + current_feed_id.to_s + '?startId='+ entries.last.id.to_s %>">
             Load more
         </a>
     <% end %>

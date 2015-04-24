@@ -7,10 +7,10 @@
    >
     <channel>
         <title>Marked Articles</title>
-        <link><%= url_for '/', :full %></link>
+        <link><%= url '/', :full %></link>
         <description></description>
         <generator>feedtragón</generator>
-        <atom:link href="<%= url_for '/feed' %>" rel="self" type="application/rss+xml" />
+        <atom:link href="<%= url '/feed' %>" rel="self" type="application/rss+xml" />
 
         <% entries.each do |entry| %>
             <item>

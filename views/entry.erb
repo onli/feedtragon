@@ -4,9 +4,9 @@
     </h2>
     <div><%= entry.contentWithAbsLinks %></div>
     <% if entry.marked? %>
-        <form class="mark" method="POST" action="<%=url_for '/' + entry.id.to_s + '/unmark' %>"><button type="submit">&#9733;</button></form>
+        <form class="mark" method="POST" action="<%=url '/' + entry.id.to_s + '/unmark' %>"><button type="submit">&#9733;</button></form>
     <% else %>
-        <form class="mark" method="POST" action="<%=url_for '/' + entry.id.to_s + '/mark' %>"><button type="submit">&#9734;</button></form>
+        <form class="mark" method="POST" action="<%=url '/' + entry.id.to_s + '/mark' %>"><button type="submit">&#9734;</button></form>
     <% end %>
     <hr class="read" data-entryid="<%= entry.id %>"> </hr>
 </li>

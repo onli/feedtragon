@@ -1,6 +1,6 @@
 <section id="unsubscribeForm">
     <h2>Unsubscribe</h2>
-    <form method="POST" action="<%= url_for '/unsubscribe' %>">
+    <form method="POST" action="<%= url '/unsubscribe' %>">
     <ol id="unsubscribeList">
     <% feeds.each do |feed|  %>
         <label for="feeds[<%= feed.id.to_s %>]">
