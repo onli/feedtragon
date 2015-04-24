@@ -46,21 +46,26 @@ textarea {
 
 /* specifics */
 
-#login {
+#login, #index {
     max-width: 20em;
     margin: auto;
-    margin-top: 20%;
+    padding-top: 20%;
+    text-align: center;
 }
 
-#login #logo {
+#logo {
     max-height: 5em;
-    float: left;
-    position: relative;
-    right: 0.5em;
+    display: inline;
 }
 
-#login h1 {
+#login div {
+    display: inline-block;
+}
+
+#login h1, #index h1 {
     font-weight: 400;
+    display: inline-block;
+    vertical-align: top;
 }
 
 #feeds {
