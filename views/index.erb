@@ -1,27 +1,3 @@
 <%# -*- encoding : utf-8 -*- %>
-<!DOCTYPE html>
-<html>
-    <%= erb :head, :locals => {:current_feed_id => current_feed_id} %>
 
-    <body>
-        <% if ! isAdmin? %>
-            <main id="login">
-                <img src="<%= url_for '/mstile-144x144.png' %>" id="logo">
-                <div>
-                    <h1>Login</h1>
-                    <%= render_login_button %>
-                </div>
-        </main>
-        <% else %>
-            <%= erb :feedlist, :locals => {:feeds => feeds, :current_feed_id => current_feed_id} %>
-
-            <%= erb :entrylist, :locals => {:entries => entries, :current_feed_id => current_feed_id} if entries %>
-            <% if showSettings %>
-                <main id="entries">
-                    <%= erb :addForm %>
-                    <%= erb :unsubscribeForm, :locals => {:feeds => feeds} %>
-                </main>
-            <% end %>
-        <% end %>  
-    </body>
-</html>
+<%= erb :entrylist, :locals => {:entries => entries, :current_feed_id => current_feed_id} if entries %>

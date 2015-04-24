@@ -95,6 +95,7 @@ post '/subscribe' do
 end
 
 post '/unsubscribe' do
+    protected!
     begin
         params["feeds"].each do |id, _|
             feed = Feed.new(id: id)
@@ -170,12 +171,12 @@ end
 
 get %r{/([0-9]+)/feedlink} do |id|
     protected!
-    erb :feedlink, :locals => {:feed => Feed.new(id: id), :current_feed_id => nil}
+    erb :feedlink, :layout => false, :locals => {:feed => Feed.new(id: id), :current_feed_id => nil}
 end
 
 get %r{/([0-9]+)/entry} do |id|
     protected!
-    erb :entry, :locals => {:entry => Entry.new(id: id)}
+    erb :entry, :layout => false, :locals => {:entry => Entry.new(id: id)}
 end
 
 get %r{/(.*)/entries} do |feed_id|
@@ -186,17 +187,18 @@ get %r{/(.*)/entries} do |feed_id|
     else 
         feed_entries = Feed.new(id: feed_id).entries(startId: params[:startId])
     end
-    feed_entries.each{|entry| entries.push(erb :entry, :locals => {:entry => entry})}
+    feed_entries.each{|entry| entries.push(erb :entry, :layout => false, :locals => {:entry => entry})}
     {:entries => entries}.to_json
 end
 
 get %r{/(.*)/feed} do |feed_url|
     halt 404 if feed_url != gen_secret_url.to_s
     headers "Content-Type"   => "application/rss+xml"
-    erb :feed, :locals => {:entries => Database.new.getMarkedEntries(nil)}
+    erb :feed, :layout => false, :locals => {:entries => Database.new.getMarkedEntries(nil)}
 end
 
 get %r{/([0-9]+)} do |id|
+    protected!
     erb :index, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true), :entries => Feed.new(id: id).entries(startId: params[:startId]), :current_feed_id => id, :showSettings => false}
 end
 
@@ -224,10 +226,12 @@ websocket '/updated' do
 end
 
 get '/settings' do
-    erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => nil, :current_feed_id => nil, :showSettings => true}
+    protected!
+    erb :settings, :locals => {:feeds => Database.new.getFeeds, :entries => nil, :current_feed_id => nil, :showSettings => true, :allFeeds => Database.new.getFeeds(onlyUnread: false)}
 end
 
 get '/marked' do
+    protected!
     erb :index, :locals => {:feeds => Database.new.getFeeds, :entries => Database.new.getMarkedEntries(params[:startId]), :current_feed_id => 'marked', :showSettings => false}
 end
 
