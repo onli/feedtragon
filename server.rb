@@ -11,9 +11,10 @@ require 'json'
 require 'sinatra/browserid'
 require 'sinatra/hijacker'
 require 'nokogiri'
+require 'tilt/erb'
 include ERB::Util
 use Rack::Session::Pool, :expire_after => 2628000
-set :browserid_login_button, "/browserid.png"
+set :static_cache_control, [:public, max_age: 31536000]
 register Sinatra::Hijacker
 
 websockets = []
@@ -58,6 +59,10 @@ end
 
 configure do
     loadConfiguration()
+end
+
+before do
+    settings.browserid_login_button = url("/browserid.png")
 end
 
 use Rack::Superfeedr do |superfeedr|
