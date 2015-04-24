@@ -6,7 +6,7 @@
         <label for="feeds[<%= feed.id.to_s %>]">
         <li>
             <input type="checkbox" id="feeds[<%= feed.id.to_s %>]" name="feeds[<%= feed.id.to_s %>]" />
-            <%= truncate(feed.name, 75, "...") %>
+            <%= truncate(feed.name, 75, "...") %> <a href="<%= feed.url %>">&#8599;</a>
         </li>
         </label>
     <% end %>
