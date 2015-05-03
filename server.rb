@@ -122,7 +122,7 @@ post '/import' do
     redirect url '/'
 end
 
-post '/export.opml' do
+get '/feeds.opml' do
     protected!
     content_type 'text/x-opml'
     erb :export, :layout => false, :locals => {:feeds => Database.new.getFeeds(onlyUnread: false) }

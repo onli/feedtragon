@@ -2,7 +2,7 @@
     <%= erb :addForm %>
     <section id="exportForm">
         <h2>Export</h2>
-        <form action="<%= url '/export.opml' %>" method="POST">
+        <form action="<%= url '/feeds.opml' %>" method="GET">
             <button type="submit">Export</button>
         </form>
     </section>
