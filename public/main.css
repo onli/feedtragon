@@ -177,7 +177,8 @@ textarea {
 }
 
 #unsubscribeForm,
-#addForms  {
+#addForms,
+#exportForm  {
     padding-top: 2em;
     padding-left: 2em;
 }
