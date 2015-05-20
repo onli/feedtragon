@@ -220,10 +220,32 @@
         });
     }
 
+    function addSelectAllButton() {
+        var tagString = "<button type='button' id='toggleUnsubscribe'>all</button>";
+        var range = document.createRange();
+        //range.selectNode(document.querySelector("#unsubscribeList"));
+        var documentFragment = range.createContextualFragment(tagString);
+        var unsubscribeForm = document.querySelector("#unsubscribeForm form")
+        unsubscribeForm.insertBefore(documentFragment, unsubscribeForm.firstChild);
+        document.querySelector('#toggleUnsubscribe').addEventListener('click', function(evt) {
+            var checkboxes = document.querySelectorAll('#unsubscribeList input');
+            
+            if (checkboxes[0].checked) {
+                for (var i=0;i < checkboxes.length;i++) {
+                    checkboxes[i].checked = false;
+                }
+            } else {
+                for (var i=0;i < checkboxes.length;i++) {
+                    checkboxes[i].checked = true;
+                }
+            }
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         n.Entry.checkRead(true);
         n.Feed.getUpdates();
-        var main = document.querySelector('main');
+        var main = document.querySelector('#entryList');
         if (main) {
             n.Feed.current_feed = main.dataset['feedid'];
             n.Entry.setCurrent(main.querySelector('.read').dataset['entryid']);
@@ -251,6 +273,9 @@
                 evt.preventDefault();
                 n.Feed.loadMoreEntries();
             });
+        }
+        if (document.querySelector('#unsubscribeForm')) {
+            addSelectAllButton();
         }
     });
 
