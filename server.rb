@@ -117,7 +117,11 @@ post '/import' do
     opml = params[:file][:tempfile].read
     doc = Nokogiri::XML(opml)
     doc.xpath("/opml/body/outline").map do |outline|
-        subscribe(url: outline.attr("xmlUrl"), name: outline.attr("title"))
+        begin
+            subscribe(url: outline.attr("xmlUrl"), name: outline.attr("title"))
+        rescue Net::ReadTimeout
+            warn "could not subscribe to #{outline.attr("xmlUrl")}"
+        end
     end
     redirect url '/'
 end
