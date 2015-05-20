@@ -239,7 +239,7 @@ end
 get '/' do
     if Database.new.firstUse? || ! Database.new.superfeedrLinked?
         Database.new.addUser('admin', authorized_email) if ! authorized_email.nil?
-        erb :installer
+        erb :installer, :layout => false
     else
         erb :index, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true), :current_feed_id => nil}
     end
