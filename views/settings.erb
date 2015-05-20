@@ -1,4 +1,10 @@
 <main id="entries">
     <%= erb :addForm %>
+    <section id="exportForm">
+        <h2>Export</h2>
+        <form action="<%= url '/feeds.opml' %>" method="GET">
+            <button type="submit">Export</button>
+        </form>
+    </section>
     <%= erb :unsubscribeForm, :locals => {:feeds => allFeeds} %>
 </main>

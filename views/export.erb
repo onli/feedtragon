@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml>
+    <head>
+        <title>feedtragón feeds</title>
+        <dateCreated><%= Time.now.rfc2822 %></dateCreated>
+    </head>
+    <body>
+        
+        <% feeds.select{|feed| feed.subscribed?}.each do |feed| %><outline title="<%= feed.name %>" text="<%= feed.name %>" type="rss" xmlUrl="<%= feed.url %>"/>
+        <% end %>
+    </body>
+</opml>

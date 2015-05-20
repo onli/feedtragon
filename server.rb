@@ -122,6 +122,12 @@ post '/import' do
     redirect url '/'
 end
 
+get '/feeds.opml' do
+    protected!
+    content_type 'text/x-opml'
+    erb :export, :layout => false, :locals => {:feeds => Database.new.getFeeds(onlyUnread: false) }
+end
+
 def subscribe(url:, name:)
     protected!
     puts "subscribe"

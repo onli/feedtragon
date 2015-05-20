@@ -83,7 +83,12 @@ class Entry
                 end
             end
         end
-        
-        return doc.at('body').inner_html 
+
+        begin
+            return doc.at('body').inner_html
+        rescue NoMethodError => nme
+            warn "Could not get entry: #{nme}"
+            return ""
+        end
     end
 end
