@@ -94,12 +94,15 @@ end
 
 post '/subscribe' do
     protected!
+    # the superfeedr middleware needs to be set if we are not running on /, and it needs to be relative
+    Rack::Superfeedr.base_path = url("/superfeedr/feed/", false)
     subscribe(url: params[:url], name: params[:url])
     redirect url '/'
 end
 
 post '/unsubscribe' do
     protected!
+    Rack::Superfeedr.base_path = url("/superfeedr/feed/", false)
     begin
         params["feeds"].each do |id, _|
             feed = Feed.new(id: id)
@@ -114,6 +117,7 @@ end
 
 post '/import' do
     protected!
+    Rack::Superfeedr.base_path = url("/superfeedr/feed/", false)
     opml = params[:file][:tempfile].read
     doc = Nokogiri::XML(opml)
     doc.xpath("/opml/body/outline").map do |outline|
@@ -134,19 +138,15 @@ end
 
 def subscribe(url:, name:)
     protected!
-    puts "subscribe"
     feed = Feed.new(url: url, name: name).save!
-    puts "feed loaded: #{feed.id}"
     if ! feed.subscribed?
-        puts "feed not already subscribed"
         Rack::Superfeedr.subscribe(feed.url, feed.id, {retrieve: true, format: 'json'}) do |body, success, response|
             if success
-                puts "subscription confirmed"
                 feed.subscribed!
             else
-                puts "error subscribing"
-                puts response
-                puts body
+                warn "error subscribing"
+                warn response
+                warn body
             end
         end
     end
