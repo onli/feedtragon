@@ -242,7 +242,9 @@
         });
     }
 
+    var contentLoaded = false;
     document.addEventListener('DOMContentLoaded', function() {
+        var contentLoaded = true;
         n.Entry.checkRead(true);
         n.Feed.getUpdates();
         var main = document.querySelector('#entryList');
@@ -274,7 +276,7 @@
                 n.Feed.loadMoreEntries();
             });
         }
-        if (document.querySelector('#unsubscribeForm')) {
+        if (document.querySelector('#unsubscribeForm') && ! document.querySelector('#toggleUnsubscribe')) {
             addSelectAllButton();
         }
     });
@@ -283,6 +285,8 @@
         // since we load this async, we need sometimes to fire the already passed load event manually
         var event = document.createEvent('HTMLEvents');
         event.initEvent('DOMContentLoaded', true, true);
-        document.dispatchEvent(event);
+        if (! contentLoaded) {
+            document.dispatchEvent(event);
+        }
     }
 }());
