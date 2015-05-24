@@ -13,19 +13,25 @@
     </head>
 
     <body>
-        <div id="content">
+        <main id="installer">
             <h1>Installation</h1>
             <% if ! authorized? %>
-                <h2>Step 1/2</h2>
-                <p>Please sign in: <%= render_login_button %></p>
+                <h2>Step 1/2: Login</h2>
+                <div id="login">
+                    <img src="<%= url '/mstile-144x144.png' %>" id="logo">
+                    <div>
+                        <h1>Login</h1>
+                        <%= render_login_button %>
+                    </div>
+                </div>
                 <p>The mail address used will be marked as being admin.</p>
             <% else %>
-                <h2>Step 2/2</h2>
-                <p>Server and superfeedr information (please create a free account <a href="https://superfeedr.com/subscriber">here</a>)
+                <h2>Step 2/2: Feed Retrieval</h2>
+                <p>Please create a free <a href="https://superfeedr.com/subscriber">Superfeedr-account</a> and create an access token with subscribe and unsubscribe rights:
                 <form method="POST" action="<%= url '/addSuperfeedr' %>">
                     <ul id="superfeedr">
                         <li><label>superfeedr name: <input name="name" type="text" required placeholder="user"></input></label></li>
-                        <li><label>superfeedr password (token): <input name="password" type="text" required placeholder=""2e4f8aadsdasd45ad4o41"></input></label></li>
+                        <li><label>superfeedr token: <input name="password" type="text" required placeholder="2e4f8aadsdasd45ad4o41"></input></label></li>
                     </ul>
                     <button type="submit">OK</button>
                 </form>

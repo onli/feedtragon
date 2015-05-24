@@ -237,3 +237,15 @@ textarea {
 #moreEntries:hover {
      background-color: rgba(100,100,100, 0.1);
 }
+
+#installer {
+    margin: auto;
+    max-width: 40em;
+    width: 100%;
+}
+
+#installer #login {
+    margin: 0;
+    padding-top: 2em;
+    margin-bottom: 3em;
+}
