@@ -40,6 +40,10 @@ helpers do
     def secret_url
         gen_secret_url
     end
+
+    def getOption(name)
+        Database.new.getOption(name)
+    end
 end
 
 def loadConfiguration()
@@ -208,10 +212,10 @@ end
 post '/addSuperfeedr' do
     protected!
     db = Database.new
-    db.setOption("host", request.host)
+    db.setOption("host",  params["host"] || request.host)
     db.setOption("superfeedrName", params["name"])
     db.setOption("superfeedrPassword", params["password"])
-    db.setOption("secret", SecureRandom.urlsafe_base64(256))
+    db.setOption("secret", SecureRandom.urlsafe_base64(256)) if ! db.getOption("secret")
     loadConfiguration()
     redirect url '/'
 end
