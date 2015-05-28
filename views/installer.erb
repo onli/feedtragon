@@ -27,7 +27,7 @@
                 <p>The mail address used will be marked as being admin.</p>
             <% else %>
                 <h2>Step 2/2: Feed Retrieval</h2>
-                <p>Please create a free <a href="https://superfeedr.com/subscriber">Superfeedr-account</a> and create an access token with subscribe and unsubscribe rights:
+                <p>Please create a free <a href="https://superfeedr.com/subscriber">Superfeedr-account</a> and create an <a href="https://superfeedr.com/tokens/new?label=feedtragon&acl_subscribe=true&acl_unsubscribe=true&acl_retrieve=true">access token with subscribe, retrieve and unsubscribe rights</a>, then enter it here:
                 <form method="POST" action="<%= url '/addSuperfeedr' %>">
                     <ul id="superfeedr">
                         <li><label>superfeedr name: <input name="name" type="text" required placeholder="user"></input></label></li>
