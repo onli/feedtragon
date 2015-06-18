@@ -145,7 +145,7 @@
                 }
             },
             gotoNext: function() {
-                if (n.Feed.current_feed != 0) {
+                if (n.Feed.current_feed != 0) {                    
                     window.location = document.querySelector('#feed_' + n.Feed.current_feed + ' + li a').href;
                 } else {
                     window.location = document.querySelector('.feedlink a').href;
@@ -247,8 +247,8 @@
         var contentLoaded = true;
         n.Entry.checkRead(true);
         n.Feed.getUpdates();
-        var main = document.querySelector('#entryList');
-        if (main) {
+        var main = document.querySelector('main');
+        if (main.dataset['feedid']) {
             n.Feed.current_feed = main.dataset['feedid'];
             n.Entry.setCurrent(main.querySelector('.read').dataset['entryid']);
         }
