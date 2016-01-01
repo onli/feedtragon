@@ -3,15 +3,17 @@ Element.prototype.isVisible = function() {
     'use strict';
 
     function _visible(element) {
-        if (element.offsetWidth === 0 || element.offsetHeight === 0) return false;
+        if (element.offsetWidth === 0 || element.offsetHeight === 0) {
+            return false;
+        }
+        console.log(element);
         var height = document.documentElement.clientHeight,
             rects = element.getClientRects(),
             on_top = function(r) {
-                for (var x = Math.floor(r.left), x_max = Math.ceil(r.right); x <= x_max; x++)
-                for (var y = Math.floor(r.top), y_max = Math.ceil(r.bottom); y <= y_max; y++) {
-                    if (document.elementFromPoint(x, y) === element) return true;
-                }
-                return false;
+                // testing the top left pixel here, as we normally scroll from top to bottom, and 
+                // the middle of entries is too often too late visible
+                var x = r.left, y = r.top;
+                return document.elementFromPoint(x, y) === element;
             };
         for (var i = 0, l = rects.length; i < l; i++) {
             var r = rects[i],
