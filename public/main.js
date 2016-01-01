@@ -5,8 +5,11 @@
     
     var n = {
         Entry: {
+            // a guard to not do read and current status checks on every scroll
             check_block: false,
+            // the entry currently marked
             current_entry: 0,
+            // amount of pixel from the top where an entry has to have reached until it is set as current
             current_marker_top: null,
             markRead: function(entryId) {
                 if (! document.querySelector('#entry_' + entryId + ' h2').className.contains('readIcon')) {
