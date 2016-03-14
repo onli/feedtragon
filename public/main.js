@@ -12,7 +12,7 @@
             // amount of pixel from the top where an entry has to have reached until it is set as current
             current_marker_top: null,
             markRead: function(entryId) {
-                if (! document.querySelector('#entry_' + entryId + ' h2').className.contains('readIcon')) {
+                if (! document.querySelector('#entry_' + entryId + ' h2').className.indexOf('readIcon') != -1) {
                     var http = new XMLHttpRequest();
                 
                     http.onreadystatechange = function() {
@@ -25,7 +25,7 @@
                 }
             },
             markUnread: function(entryId) {
-                if (document.querySelector('#entry_' + entryId + ' h2').className.contains('readIcon')) {
+                if (document.querySelector('#entry_' + entryId + ' h2').className.indexOf('readIcon') != -1) {
                     var http = new XMLHttpRequest();
                 
                     http.onreadystatechange = function() {
@@ -83,7 +83,7 @@
                 window.open(document.querySelector('#entry_' + n.Entry.current_entry + ' h2 a').href);
             },
             toggleRead: function(entryId) {
-                if (document.querySelector('#entry_' + entryId + ' h2').className.contains('readIcon')) {
+                if (document.querySelector('#entry_' + entryId + ' h2').className.indexOf('readIcon') != -1) {
                     n.Entry.markUnread(entryId);
                 } else {
                     n.Entry.markRead(entryId);
@@ -104,7 +104,9 @@
                 n.Entry.current_entry = entryId;
                 try {
                     document.querySelector('.entry.current').classList.remove('current');
-                } catch(e if e instanceof TypeError) {}
+                } catch(e) {
+		    if (e instanceof TypeError) {}
+		}
                 document.querySelector('#entry_' + entryId).classList.add('current');
             }
         },
