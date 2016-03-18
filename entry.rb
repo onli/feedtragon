@@ -71,7 +71,7 @@ class Entry
             url_param = tags[node.name]
 
             src = node[url_param]
-            unless (src.nil? || src.empty?)
+            unless (src.nil? || src.empty? || src.start_with?("mailto:"))
                 begin
                     uri = URI.parse(URI.escape(src))
                     unless uri.host
