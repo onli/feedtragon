@@ -3,7 +3,7 @@
         <% entries.each do |entry| %>
             <input type="hidden" name="ids[]" value="<%= entry.id %>" />
         <% end %>
-        <button type="submit" title="Mark all as read">&#10003;</button>
+        <button id="readFeed" type="submit" title="Mark all as read">&#10003;</button>
     </form>
     <ol id="entryList">
     <% entries.each do |entry| %>

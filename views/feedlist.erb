@@ -4,8 +4,15 @@
         <button type="submit" title="Mark all as read">&#10003;</button>
     </form>
     <a id="markLink" <%= 'class="current"' if current_feed_id == 'marked' %> href="<%= url '/marked' %>">Marked</a>
+    <select id="mobileList">
+        <% feeds.each do |feed| %>
+            <option value="<%= url '/' + feed.id.to_s %>" <%= feed.id.to_i == current_feed_id.to_i ? 'selected="true"' : ''%>><%= truncate(feed.name, 35, "...") %></option>
+        <% end %>
+    </select>
     <ol id="feedList">
-    <% feeds.each {|feed| %><%= erb :feedlink, :locals => {:feed => feed, :current_feed_id => current_feed_id} %><% } %>
+    <% feeds.each do |feed| %>
+        <li class="feedlink<%= feed.id.to_i == current_feed_id.to_i ? ' current' : ''%>" id="feed_<%= feed.id %>"><a href="<%= url '/' + feed.id.to_s %>"><%= truncate(feed.name, 35, "...") %></a></li>
+    <% end %>
     </ol>
     <a id="addLink" href="<%= url '/settings' %>">&#9881;</a>
 </section>
