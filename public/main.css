@@ -12,8 +12,7 @@ body {
 }
 
 img {
-    max-width: 700px;
-    width: 100%;
+    max-width: 100%;
     height: auto;
 }
 
@@ -48,10 +47,19 @@ textarea {
 /* specifics */
 
 #login, #index {
-    max-width: 20em;
+    max-width: 40em;
     margin: auto;
-    padding-top: 20%;
+    padding-left: 20%;
     text-align: center;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#login {
+    padding-left: 0;
+    
 }
 
 #logo {
@@ -59,7 +67,7 @@ textarea {
     display: inline;
 }
 
-#login div {
+#login > div {
     display: inline-block;
 }
 
@@ -75,15 +83,16 @@ textarea {
     width: 20%;
     height: 100%;
     overflow: auto;
-    box-shadow: 3px 3px 5px 0px #ccc;
+    box-shadow: 3px 3px 5px 0px #996E6E;
     position: fixed;
+    border-left: 1px solid #f22f49;
 }
 
 #feedList {
     vertical-align: top;
-    margin-top: 0em;
+    margin-top: 0;
     margin-bottom: 0;
-    margin-left: 1.6em;
+    padding-left: 1.6em;
     padding-left: 0;
     
 }
@@ -93,16 +102,25 @@ textarea {
 }
 
 #feedList a {
-    color: #3B5998;
+    color: #333;
 }
 
 #feedList li {
     list-style-type: none;
-    margin-bottom: 0.5em;
+    padding-left: 1.6em;
+    padding-top: 0.2em;
+    padding-bottom: 0.2em;
+    border-bottom: 1px solid #E5E5E5;
 }
 
-#feedList li.current a {
-    color: #8496bc;
+#feedList a {
+    padding-top: 0.3em;
+    padding-bottom: 0.3em;
+    display: block;
+}
+
+#feedList li.current {
+    background-color: #E5E5E5;
 }
 
 #entries {
@@ -164,23 +182,32 @@ textarea {
 }
 
 #markLink {
-    color: #3B5998;
+    color: #333;
     display: block;
-    margin-top: 1.4em;
-    margin-bottom: 1em;
-    margin-left: 1.6em;
+    padding-top: 1.4em;
+    padding-bottom: 1em;
+    padding-left: 1.6em;
+    border-bottom: 1px solid #E5E5E5;
 }
 
 #markLink.current {
-    color: #8496bc;
+    background-color: #E5E5E5;
 }
+
+#feeds li:hover,
+#feeds a:hover {
+    background-color: white;
+}
+
 
 #addLink {
     font-size: 1.4em;
     font-weight: bold;
-    margin-left: 1em;
-    padding-bottom: 1em;
-    color: #3B5998;
+    padding-left: 1em;
+    padding-bottom: 0.2em;
+    padding-top: 0.2em;
+    color: #333;
+    display: block;
 }
 
 #unsubscribeForm,
@@ -294,6 +321,7 @@ textarea {
         overflow: visible;
         padding-bottom: 0.3em;
         min-width: 400px;
+        background-color: white;
     }
     #entries {
         width: 100%;
