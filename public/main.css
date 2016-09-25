@@ -109,6 +109,11 @@ textarea {
 
 #feedList a {
     color: #333;
+    outline: none;
+}
+
+#feedList a:focus {
+    color: #f22f49 !important;
 }
 
 #feedList li {
