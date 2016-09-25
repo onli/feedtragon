@@ -36,6 +36,9 @@ input, textarea, button {
 
 button {
     cursor: pointer;
+}
+
+.button {
     width: 3em;
     padding-left: 0em !important;
     padding-right: 0em !important;
