@@ -1,7 +1,7 @@
 <section id="feeds">
     <form id="feedReadall" method="POST" action="<%= url '/readall' %>">
         <input type="hidden" name="all" value="true" />
-        <button type="submit" title="Mark all as read">&#10003;</button>
+        <button type="submit" class="button button-rounded" title="Mark all as read">&#10003;</button>
     </form>
     <a id="markLink" <%= 'class="current"' if current_feed_id == 'marked' %> href="<%= url '/marked' %>">Marked</a>
     <select id="mobileList">

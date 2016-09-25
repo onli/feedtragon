@@ -1,12 +1,12 @@
 <li id="entry_<%= entry.id %>" class="entry">
-    <h2>
+    <h2 class="entryTitle">
         <a href="<%= entry.url %>"><%= entry.title %></a>
     </h2>
     <div><%= entry.contentWithAbsLinks %></div>
     <% if entry.marked? %>
-        <form class="mark" method="POST" action="<%=url '/' + entry.id.to_s + '/unmark' %>"><button type="submit">&#9733;</button></form>
+        <form class="mark" method="POST" action="<%=url '/' + entry.id.to_s + '/unmark' %>"><button class="button button-rounded" type="submit">&#9733;</button></form>
     <% else %>
-        <form class="mark" method="POST" action="<%=url '/' + entry.id.to_s + '/mark' %>"><button type="submit">&#9734;</button></form>
+        <form class="mark" method="POST" action="<%=url '/' + entry.id.to_s + '/mark' %>"><button class="button button-rounded" type="submit">&#9734;</button></form>
     <% end %>
     <hr class="read" data-entryid="<%= entry.id %>"> </hr>
 </li>
