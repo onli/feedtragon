@@ -35,6 +35,10 @@ class Entry
     def read!
         Database.new.setRead(true, self)
     end
+
+    def read?
+        Database.new.read?(self)
+    end
     
     def mark!
         Database.new.setMark(true, self)

@@ -1,0 +1,17 @@
+<% if output == "json" %>
+{"itemRefs":[
+	<% entries.each do |entry| %>
+		{"id":"<%= entry.id %>","directStreamIds":[],"timestampUsec":"<%= DateTime.now.strftime('%s') %>"}
+	<% end %>
+	],
+"continuation":"<%= entries.last.id %>"}
+<% else %>
+<object>
+	<list name="itemRefs">
+		<% entries.each do |entry| %>
+			<object><number name="id"><%= entry.id %></number><list name="directStreamIds"></list><number name="timestampUsec"><%= DateTime.now.strftime('%s') %></number></object>
+		<% end %>
+	</list>
+	<string name="continuation"><%= entries.last.id %></string>
+</object>
+<% end %>

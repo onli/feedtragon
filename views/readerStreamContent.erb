@@ -1,0 +1,43 @@
+<% if output == "atom" %>
+<?xml version="1.0"?>
+<feed xmlns:media="http://search.yahoo.com/mrss/" xmlns:gr="http://www.google.com/schemas/reader/atom/" xmlns:idx="urn:atom-extension:indexing" xmlns="http://www.w3.org/2005/Atom" idx:index="no" gr:dir="ltr">
+  <!-- Content-type: Preventing XSRF in IE. -->
+  <generator uri="http://www.google.com/reader">Google Reader</generator>
+  <id>feed/<%= feed.id %></id>
+  <title><%= feed.name %></title>
+  <subtitle type="html"><%= feed.title %>/subtitle>
+  <link rel="self" href="<%= request.url %>" />
+  <gr:continuation><%= entries.last.id %></gr:continuation>
+  <updated><%= DateTime.now.rfc2822 %></updated>
+  <% entries.each do |entry| %>
+  <entry gr:crawl-timestamp-msec="<%= DateTime.now.strftime('%s') %>">
+	<id gr:original-id="<%= entry.url %>">tag:google.com,2005:reader/item/<%= entry.id %></id>
+	<category term="user/01234567890123456789/state/com.google/reading-list" scheme="http://www.google.com/reader/" label="reading-list" />
+	<category term="user/01234567890123456789/state/com.google/fresh" scheme="http://www.google.com/reader/" label="fresh" />
+	<title type="html"><%= entry.title %></title>
+	<published><%= DateTime.now.rfc2822 %></published>
+	<updated><%= DateTime.now.rfc2822 %></updated>
+	<link rel="alternate" href="<%= entry.url %>" type="text/html" />
+	<summary type="html"><%= h entry.content %></summary>
+	<author>
+	  <name />
+	</author>
+	<source gr:stream-id="feed/<%= feed.id %>">
+	  <id>tag:google.com,2005:reader/feed/<%= feed.id %></id>
+	  <title type="html"><%= feed.name %></title>
+	  <link rel="alternate" href="<%= feed.url %>" type="text/html" />
+	</source>
+  </entry>
+  <% end %>
+</feed>
+<% else %>
+{"direction":"ltr","id":"feed/<%= feed.id %>","title":"<%= feed.name %>","description":"<%= feed.name %>","self":{"href":"<%= request.url %>"},"alternate":{"href":"<%= feed.url %>","type":"text/html"},"updated":<%= DateTime.now.strftime('%s') %>,"items":
+[
+		<% entries.each do |entry| %>
+		{
+			"crawlTimeMsec":"1475169480205","timestampUsec":"1475169480205689","id":"tag:google.com,2005:reader/item/<%= entry.id %>","categories":["user/01234567890123456789/state/com.google/reading-list","user/01234567890123456789/state/com.google/fresh"],"published":<%= DateTime.now.strftime('%s') %>,"updated":<%= DateTime.now.strftime('%s') %>,"canonical":[{"href":"<%= entry.url %>"}],"alternate":[{"href":"<%= entry.url %>","type":"text/html"}],"summary":{"direction":"ltr","content":"<%= entry.content %>"},"title":"<%= entry.title %>","author":"","origin":{"streamId":"feed/<%= entry.feed_id %>","title":"<%= Feed.new(id: entry.feed_id).name %>","htmlUrl":"<%= Feed.new(id: entry.feed_id).url %>"}
+		},
+		<% end %>
+]
+}
+<% end %>

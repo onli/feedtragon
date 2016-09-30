@@ -1,0 +1,15 @@
+<% if output == "json" %>
+{"subscriptions":[
+	<% feeds.each do |feed| %>
+	{"id":"feed/<%= feed.id %>","title":"<%= feed.name %>","categories":[],"sortid":"00000003","firstitemmsec":"1234567890000","htmlUrl":"<%= feed.url %>"},
+	<% end %>
+	]
+}
+<% else %>
+<object><list name="subscriptions">
+	<% feeds.each do |feed| %>
+	<object><string name="id">feed/<%= feed.id %></string><string name="title"><%= feed.name %></string><list name="categories"></list><string name="sortid">00000003</string><number name="firstitemmsec">1234567890000</number><string name="htmlUrl"><%= feed.url %></string></object>
+	<% end %>
+</list></object>
+<% end %>
+hm

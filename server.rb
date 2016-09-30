@@ -6,6 +6,7 @@ require './entry.rb'
 require './database.rb'
 
 require 'sinatra'
+require "sinatra/multi_route"
 require 'rack-superfeedr'
 require 'json'
 require 'sinatra/browserid'
@@ -20,6 +21,9 @@ register Sinatra::Hijacker
 websockets = []
 
 helpers do
+    include Rack::Utils
+    alias_method :h, :escape_html
+    
     def isAdmin?
         if authorized?
             return Database.new.getAdminMail == authorized_email
@@ -43,6 +47,15 @@ helpers do
 
     def getOption(name)
         Database.new.getOption(name)
+    end
+
+    def apiAccess!
+        ctoken = Database.new.getOption("ctoken")
+        if ctoken
+            return request.env["HTTP_AUTHORIZATION"] == "GoogleLogin auth=#{ctoken}"
+        else
+            return false
+        end
     end
 end
 
@@ -96,6 +109,195 @@ use Rack::Superfeedr do |superfeedr|
     end
 end
 
+## bazqux flavored reader api ##
+
+post '/accounts/ClientLogin' do
+    if Argon2::Password.verify_password(params["Passwd"], Database.new.getOption("clientPassword"))
+        ctoken = SecureRandom.urlsafe_base64(256)
+        Database.new.setOption("ctoken", ctoken) 
+        erb :readerAuth, :layout => false, :locals => {:ctoken => ctoken}
+    else
+        return "Error=BadAuthentication"
+    end
+end
+
+get '/reader/ping' do
+    if apiAccess!
+        return "ok"
+    else
+        return "Unauthorized"
+    end
+end
+
+get '/reader/directory/search' do
+    return "Search is not yet supported"
+end
+
+get '/reader/api/0/user-info' do
+    if apiAccess!
+        erb :readerUserInfo, :layout => false, :locals => {:user => Database.new.getAdminMail}
+    end
+end
+
+get '/reader/api/0/preference/list' do
+    if params["output"] == "json"
+        return '{"prefs":[]}'
+    else
+        return '<object><list name="prefs"/></object>'
+    end
+    
+end
+
+get '/reader/api/0/friends/list' do
+    if params["output"] == "json"
+        return '{"friends":[]}'
+    else
+        return '<object><list name="friends"/></object>'
+    end
+end
+
+get '/reader/api/0/preference/stream/list' do
+    erb :readerStream, :layout => false, :locals => {:output => params["output"]}
+end
+
+get '/reader/api/0/preference/stream/set' do
+    # TODO
+    return ""
+end
+
+get '/reader/api/0/tag/list' do
+    erb :readerTaglist, :layout => false, :locals => {:output => params["output"]}
+end
+
+get '/reader/api/0/subscription/list' do
+    if apiAccess!
+        erb :readerSubscriptionlist, :layout => false, :locals => {:output => params["output"], :feeds => Database.new.getFeeds(onlyUnread: false)}
+    end
+end
+
+get '/reader/subscriptions/export' do
+    if apiAccess!
+        content_type 'text/x-opml'
+        erb :export, :layout => false, :locals => {:feeds => Database.new.getFeeds(onlyUnread: false)}
+    end
+end
+
+post '/reader/api/0/subscription/quickadd' do
+    if apiAccess!
+        Rack::Superfeedr.base_path = url("/superfeedr/feed/", false)
+        feed = subscribe(url: params["quickadd"], name: params["quickadd"])
+        erb :readerQuickadd, :layout => false, :locals => {:feed => feed}
+    end
+end
+
+post '/reader/api/0/subscription/edit' do
+    if apiAccess!
+        if params["ac"] == "unsubscribe" && params["s"]
+            id = params["s"].gsub("feed/", "")
+            feed = Feed.new(id: id)
+            Rack::Superfeedr.unsubscribe(feed.url, id)
+            feed.unsubscribed!
+        end
+    end
+end
+
+get '/reader/api/0/unread-count' do
+    if apiAccess!
+        feeds = Database.new.getFeeds(onlyUnread: true)
+        total = feeds.inject(0){|sum, feed| sum + feed.entries.size}
+        erb :readerUnread, :layout => false, :locals => {:output => params["output"], :feeds => feeds, :total => total}
+    end
+end
+
+get '/reader/api/0/stream/items/ids' do
+    if apiAccess!
+        db = Database.new
+        params["s"] ||= params["xt"]
+        case params["s"]
+        when "user/-/state/com.google/reading-list"
+            # TODO: add continuation
+            erb :readerStreamIds, :layout => false, :locals => {:output => params["output"], :entries => db.getEntries()}
+        when "user/-/state/com.google/reading-list"
+            # TODO: add continuation
+            erb :readerStreamIds, :layout => false, :locals => {:output => params["output"], :entries => db.getMarkedEntries(nil)}
+        when "user/-/state/com.google/read"
+            # TODO: add continuation
+            erb :readerStreamIds, :layout => false, :locals => {:output => params["output"], :entries => db.getEntries(nil, nil, true)}
+        when "user/-/state/com.google/broadcast", "user/-/state/com.google/created"
+            if params["output"] == "json"
+                return '{"itemRefs":[]}'
+            else
+                return '<object><list name="itemRefs"></list></object>'
+            end
+        when /feed\//
+            # TODO: add continuation
+            id = params["s"].gsub("feed/", "")
+            erb :readerStreamIds, :layout => false, :locals => {:output => params["output"], :entries => Feed.new(id: id).entries()}
+        end
+    end
+end
+
+get '/reader/api/0/stream/items/contents' do
+    if apiAccess!
+        # TODO: Add atom output
+        # we need to manually get the params here, because the syntax of having multiple i=…&i=… collides with how sinatra does things
+        entries = parseItemIds(request: request) 
+        feed = Feed.new(id: entries.first.feed_id) 
+        erb :readerStreamContent, :layout => false, :locals => {:output => params["output"], :entries => entries, :feed => feed}
+    end
+end
+
+get '/reader/api/0/stream/contents', '/reader/atom' do
+    if apiAccess!
+        params["output"] = "atom" if request.env['rack.request.script_name'] == "/reader/atom"
+        params["s"] ||= params["xt"]
+        db = Database.new
+        case params["s"]
+        when "user/-/state/com.google/reading-list"
+            # TODO: add continuation
+            feed = Feed.new(id: "reading-list", url: "/reading-list", name: "Reading List")
+            erb :readerStreamContent, :layout => false, :locals => {:output => params["output"], :entries => db.getEntries(), :feed => feed}
+        when "user/-/state/com.google/starred"
+            # TODO: add continuation
+            feed = Feed.new(id: "marked", url: "/marked", name: "Marked")
+            erb :readerStreamContent, :layout => false, :locals => {:output => params["output"], :entries => db.getMarkedEntries(nil), :feed => feed}
+        when "user/-/state/com.google/read"
+            # TODO: add continuation
+            feed = Feed.new(id: "read", url: "/read", name: "Read")
+            erb :readerStreamContent, :layout => false, :locals => {:output => params["output"], :entries => db.getEntries(nil, nil, true), :feed => feed}
+        when "user/-/state/com.google/broadcast", "user/-/state/com.google/created"
+            if params["output"] == "json"
+                return '{"itemRefs":[]}'
+            else
+                return '<object><list name="itemRefs"></list></object>'
+            end
+        when /feed\//
+            # TODO: add continuation
+            id = params["s"].gsub("feed/", "")
+            feed = Feed.new(id: id)
+            erb :readerStreamContent, :layout => false, :locals => {:output => params["output"], :entries => feed.entries(), :feed => feed}
+        end
+    end
+end
+
+get '/reader/api/0/edit-tag' do
+    entries = parseItemIds(request: request)
+    case params["s"]
+    when "user/-/state/com.google/read" then entries.each{|entry| entry.read? ? entry.unread! : entry.read! }
+    when "user/-/state/com.google/starred" then entries.each{|entry| entry.marked? ? entry.unmark! : entry.mark! }
+    end
+    return ""
+end
+
+def parseItemIds(request:)
+    ids = request.env['rack.request.query_string'].scan(/i=([0-9]*)/)
+    entries = []
+    ids.each{|id| entries.push(Entry.new(id: id[0])) }
+    return entries
+end
+
+## feedtragon web ##
+
 post '/subscribe' do
     protected!
     # the superfeedr middleware needs to be set if we are not running on /, and it needs to be relative
@@ -147,6 +349,7 @@ def subscribe(url:, name:)
         Rack::Superfeedr.subscribe(feed.url, feed.id, {retrieve: true, format: 'json'}) do |body, success, response|
             if success
                 feed.subscribed!
+                return feed
             else
                 warn "error subscribing"
                 warn response
@@ -220,6 +423,17 @@ post '/addSuperfeedr' do
     redirect url '/'
 end
 
+
+post '/setPassword' do
+    protected!
+    db = Database.new
+    hasher = Argon2::Password.new
+    hashed_password = hasher.create(params["clientPassword"])
+    # Argon2::Password.verify_password(password, Database.new.getOption("clientPassword"))
+    db.setOption("clientPassword", hashed_password)
+    redirect url '/'
+end
+
 websocket '/updated' do
     protected!
     ws.onmessage do |msg| 
@@ -258,4 +472,3 @@ get '/' do
         erb :index, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true), :current_feed_id => nil}
     end
 end
-

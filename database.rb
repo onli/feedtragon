@@ -7,6 +7,7 @@ class Database
             @@db    # create a singleton - if this class-variable is uninitialized, this will fail and can then be initialized
         rescue
             @@db = SQLite3::Database.new "database.db"
+            #TODO: Collect entry time
             begin
                 @@db.execute "CREATE TABLE IF NOT EXISTS feeds(
                                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -122,12 +123,26 @@ class Database
         end
     end
 
-    def getEntries(feed, startId)
+    def getEntries(feed = nil, startId = nil, read = false)
         begin
             entries = []
             startId ||= 0
-            @@db.execute("SELECT url, title, content, id FROM entries WHERE feed = ? AND read = 0 AND id > ? LIMIT 10;", feed.id.to_i, startId.to_i) do |row|
-                entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: feed.id.to_i))
+            if feed
+                @@db.execute("SELECT url, title, content, id FROM entries WHERE feed = ? AND read = 0 AND id > ? LIMIT 10;", feed.id.to_i, startId.to_i) do |row|
+                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: feed.id.to_i))
+                end
+            else
+                if read == false
+                    read = 0
+                    order = "ORDER by id ASC"
+                else
+                    read = 1
+                    order = "ORDER by id DESC"
+                    # TODO: reverse order
+                end
+                @@db.execute("SELECT url, title, content, id, feed FROM entries WHERE read = #{read} AND id > ? #{order} LIMIT 10;", startId.to_i) do |row|
+                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: row["feed"].to_i))
+                end
             end
             return entries
         rescue => error
@@ -159,9 +174,18 @@ class Database
 
     def marked?(entry)
         begin
-            return @@db.execute("SELECT id FROM markers WHERE entry == ?", entry.id)[0] != nil
+            return @@db.execute("SELECT id FROM markers WHERE entry = ?", entry.id.to_i)[0] != nil
         rescue => error
             warn "marked?: #{error}"
+        end
+        return false
+    end
+
+    def read?(entry)
+        begin
+            return @@db.execute("SELECT id FROM entries WHERE id == ? AND read = 1", entry.id.to_i)[0] != nil
+        rescue => error
+            warn "read?: #{error}"
         end
         return false
     end

@@ -1,0 +1,5 @@
+<% if output == "xml" %>
+	<object><string name="query"><%= feed.name %></string><number name="numResults">1</number><string name="streamId">feed/<%= feed.id %></string></object>
+<% else %>
+	{"query":"<%= feed.name %>","numResults":1,"streamId":"feed/<%= feed.id %>"}
+<% end %>

@@ -1,0 +1,15 @@
+<% if output == "json" %>	{"max":500,"unreadcounts":[
+	{"id":"user/-/state/com.google/reading-list","count":<%= total %>,"newestItemTimestampUsec":"0"},
+	<% feeds.each do |feed| %>
+		{"id":"feed/<%= feed.id %>","count":<%= feed.entries.size %>,"newestItemTimestampUsec":"1474837364000000"},
+	<% end %>
+],
+"bq_total_unreads":<%= total %>}
+<% else %>
+<object><number name="max">500</number><list name="unreadcounts">
+<object><string name="id">user/-/state/com.google/reading-list</string><number name="count"><%= total %></number><number name="newestItemTimestampUsec">0</number></object>
+<% feeds.each do |feed| %>
+	<object><string name="id">feed/<%= feed.id %></string><number name="count"><%= feed.entries.size %></number><number name="newestItemTimestampUsec">0</number></object>
+<% end %>
+<number name="bq_total_unreads"><%= total %></number></object>
+<% end %>
