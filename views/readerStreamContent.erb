@@ -36,7 +36,7 @@
 		<% entries.each do |entry| %>
 		{
 			"crawlTimeMsec":"1475169480205","timestampUsec":"1475169480205689","id":"tag:google.com,2005:reader/item/<%= entry.id %>","categories":["user/01234567890123456789/state/com.google/reading-list","user/01234567890123456789/state/com.google/fresh"],"published":<%= DateTime.now.strftime('%s') %>,"updated":<%= DateTime.now.strftime('%s') %>,"canonical":[{"href":"<%= entry.url %>"}],"alternate":[{"href":"<%= entry.url %>","type":"text/html"}],"summary":{"direction":"ltr","content":"<%= entry.content %>"},"title":"<%= entry.title %>","author":"","origin":{"streamId":"feed/<%= entry.feed_id %>","title":"<%= Feed.new(id: entry.feed_id).name %>","htmlUrl":"<%= Feed.new(id: entry.feed_id).url %>"}
-		},
+		}<%= ',' if entry != entries.last %>
 		<% end %>
 ]
 }

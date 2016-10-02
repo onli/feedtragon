@@ -1,10 +1,5 @@
 <% if output == "json" %>
-{"subscriptions":[
-	<% feeds.each do |feed| %>
-	{"id":"feed/<%= feed.id %>","title":"<%= feed.name %>","categories":[],"sortid":"00000003","firstitemmsec":"1234567890000","htmlUrl":"<%= feed.url %>"},
-	<% end %>
-	]
-}
+{"subscriptions":[<% feeds.each do |feed| %>{"id":"feed/<%= feed.id %>","title":"<%= feed.name %>","categories":[],"sortid":"00000003","firstitemmsec":"1234567890000","htmlUrl":"<%= feed.url %>"}<%= ',' if feed != feeds.last %><% end %>]}
 <% else %>
 <object><list name="subscriptions">
 	<% feeds.each do |feed| %>
@@ -12,3 +7,4 @@
 	<% end %>
 </list></object>
 <% end %>
+
