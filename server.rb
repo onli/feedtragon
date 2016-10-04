@@ -23,6 +23,11 @@ websockets = []
 helpers do
     include Rack::Utils
     alias_method :h, :escape_html
+
+    # Escape json strings
+    def jh(string)
+        JSON.generate(string, quirks_mode: true)
+    end
     
     def isAdmin?
         if authorized?
@@ -52,8 +57,12 @@ helpers do
     def apiAccess!
         ctoken = Database.new.getOption("ctoken")
         if ctoken
-            return request.env["HTTP_AUTHORIZATION"] == "GoogleLogin auth=#{ctoken}"
+            if request.env["HTTP_AUTHORIZATION"] == "GoogleLogin auth=#{ctoken}"
+                return true
+            end
+            return false
         else
+            warn "no ctoken set"
             return false
         end
     end
@@ -76,6 +85,7 @@ end
 
 configure do
     loadConfiguration()
+    set :protection, :except => [:path_traversal]
 end
 
 before do
@@ -246,11 +256,11 @@ get '/reader/api/0/stream/items/contents' do
         erb :readerStreamContent, :layout => false, :locals => {:output => params["output"], :entries => entries, :feed => feed}
     end
 end
-
-get '/reader/api/0/stream/contents', '/reader/atom' do
+use Rack::Protection, except: :path_traversal
+get %r{/reader/api/0/stream/contents(.*)}, %r{/reader/atom(.*)} do |feedId|
     if apiAccess!
         params["output"] = "atom" if request.env['rack.request.script_name'] == "/reader/atom"
-        params["s"] ||= params["xt"]
+        params["s"] = feedId if feedId && feedId.include?('feed/')   # legacy greader mode for News+
         db = Database.new
         case params["s"]
         when "user/-/state/com.google/reading-list"
@@ -273,7 +283,7 @@ get '/reader/api/0/stream/contents', '/reader/atom' do
             end
         when /feed\//
             # TODO: add continuation
-            id = params["s"].gsub("feed/", "")
+            id = params["s"].gsub("/feed/", "")
             feed = Feed.new(id: id)
             erb :readerStreamContent, :layout => false, :locals => {:output => params["output"], :entries => feed.entries(), :feed => feed}
         end
