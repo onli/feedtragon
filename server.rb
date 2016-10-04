@@ -54,11 +54,13 @@ helpers do
         Database.new.getOption(name)
     end
 
-    def apiAccess!
+    def apiAccess!(token = nil)
         ctoken = Database.new.getOption("ctoken")
         if ctoken
-            if request.env["HTTP_AUTHORIZATION"] == "GoogleLogin auth=#{ctoken}"
-                return true
+            if token
+                return token == ctoken
+            else
+                return request.env["HTTP_AUTHORIZATION"] == "GoogleLogin auth=#{ctoken}"
             end
             return false
         else
@@ -136,6 +138,12 @@ get '/reader/ping' do
         return "ok"
     else
         return "Unauthorized"
+    end
+end
+
+get '/reader/api/0/token' do
+    if apiAccess!
+        return Database.new.getOption("ctoken")
     end
 end
 
@@ -290,17 +298,24 @@ get %r{/reader/api/0/stream/contents(.*)}, %r{/reader/atom(.*)} do |feedId|
     end
 end
 
-get '/reader/api/0/edit-tag' do
-    entries = parseItemIds(request: request)
-    case params["s"]
-    when "user/-/state/com.google/read" then entries.each{|entry| entry.read? ? entry.unread! : entry.read! }
-    when "user/-/state/com.google/starred" then entries.each{|entry| entry.marked? ? entry.unmark! : entry.mark! }
+post '/reader/api/0/edit-tag' do
+    if apiAccess!(params["T"])
+        entries = parseItemIds(request: request)
+        case params["a"]
+        when "user/-/state/com.google/read" then entries.each{|entry| entry.read? ? entry.unread! : entry.read! }
+        when "user/-/state/com.google/starred" then entries.each{|entry| entry.marked? ? entry.unmark! : entry.mark! }
+        end
+        return ""
     end
-    return ""
 end
 
 def parseItemIds(request:)
-    ids = request.env['rack.request.query_string'].scan(/i=([0-9]*)/)
+    if request.request_method == "GET"
+        raw = request.env['rack.request.query_string']
+    else
+        raw = request.body.read
+    end
+    ids = raw.scan(/i=([^&]*)/)
     entries = []
     ids.each{|id| entries.push(Entry.new(id: id[0])) }
     return entries
