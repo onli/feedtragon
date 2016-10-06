@@ -17,6 +17,7 @@ include ERB::Util
 use Rack::Session::Pool, :expire_after => 2628000
 set :static_cache_control, [:public, max_age: 31536000]
 register Sinatra::Hijacker
+use Rack::Protection, except: :path_traversal
 
 websockets = []
 
@@ -264,11 +265,13 @@ get '/reader/api/0/stream/items/contents' do
         erb :readerStreamContent, :layout => false, :locals => {:output => params["output"], :entries => entries, :feed => feed}
     end
 end
-use Rack::Protection, except: :path_traversal
+
 get %r{/reader/api/0/stream/contents(.*)}, %r{/reader/atom(.*)} do |feedId|
     if apiAccess!
         params["output"] = "atom" if request.env['rack.request.script_name'] == "/reader/atom"
         params["s"] = feedId if feedId && feedId.include?('feed/')   # legacy greader mode for News+
+        params["s"] = feedId if feedId && feedId.include?('user/')   # legacy greader mode for News+
+        params["s"] = params["s"][1..-1] if params["s"].chr == "/" # snyc theoretical bazqux api format with regex for next+
         db = Database.new
         case params["s"]
         when "user/-/state/com.google/reading-list"
@@ -291,7 +294,7 @@ get %r{/reader/api/0/stream/contents(.*)}, %r{/reader/atom(.*)} do |feedId|
             end
         when /feed\//
             # TODO: add continuation
-            id = params["s"].gsub("/feed/", "")
+            id = params["s"].gsub("feed/", "")
             feed = Feed.new(id: id)
             erb :readerStreamContent, :layout => false, :locals => {:output => params["output"], :entries => feed.entries(), :feed => feed}
         end
