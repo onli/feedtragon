@@ -58,8 +58,8 @@ helpers do
     def apiAccess!(token = nil)
         ctoken = Database.new.getOption("ctoken")
         if ctoken
-            if token
-                return token == ctoken
+            if token                
+                return token == ctoken[0..63]  # note: the token only fits 64 chars
             else
                 return request.env["HTTP_AUTHORIZATION"] == "GoogleLogin auth=#{ctoken}"
             end
@@ -302,11 +302,12 @@ get %r{/reader/api/0/stream/contents(.*)}, %r{/reader/atom(.*)} do |feedId|
 end
 
 post '/reader/api/0/edit-tag' do
+    puts params
     if apiAccess!(params["T"])
         entries = parseItemIds(request: request)
         case params["a"]
-        when "user/-/state/com.google/read" then entries.each{|entry| entry.read? ? entry.unread! : entry.read! }
-        when "user/-/state/com.google/starred" then entries.each{|entry| entry.marked? ? entry.unmark! : entry.mark! }
+        when "user/-/state/com.google/read" then entries.each{|entry| entry.read? ? entry.unread! : entry.read! }; return "OK" # return something to try to prevent clients from thinking it failed (what is ht expected output?)
+        when "user/-/state/com.google/starred" then entries.each{|entry| entry.marked? ? entry.unmark! : entry.mark! }; return "OK";
         end
         return ""
     end
@@ -319,8 +320,13 @@ def parseItemIds(request:)
         raw = request.body.read
     end
     ids = raw.scan(/i=([^&]*)/)
+    ids.each_with_index do |id, index|
+        id = id[0]
+        # we got a long legacy id and need to get the real entry id, but we always want to remove the array
+        ids[index] = id.gsub("tag%3Agoogle.com%2C2005%3Areader%2Fitem%2F", "")
+    end
     entries = []
-    ids.each{|id| entries.push(Entry.new(id: id[0])) }
+    ids.each{|id| entries.push(Entry.new(id: id)) }
     return entries
 end
 
