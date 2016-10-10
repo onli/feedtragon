@@ -14,6 +14,10 @@ to install the needed gems, and
 
 to start.
 
-# Requirements
+## Requirements
 
- Ruby 2.1.0 or greater
+Ruby 2.1.0 or greater
+ 
+# Client Access
+ 
+First, set a password in the settings, then point your app to the url of your installation. Currently the Google Reader Api is implemented, the reference client is [News+](https://play.google.com/store/apps/details?id=com.noinnion.android.newsplus) with the [Google Reader Plugin](https://play.google.com/store/apps/details?id=com.noinnion.android.newsplus.extension.google_reader). 
