@@ -7,7 +7,6 @@ class Database
             @@db    # create a singleton - if this class-variable is uninitialized, this will fail and can then be initialized
         rescue
             @@db = SQLite3::Database.new "database.db"
-            #TODO: Collect entry time
             begin
                 @@db.execute "CREATE TABLE IF NOT EXISTS feeds(
                                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -30,6 +29,7 @@ class Database
                                 title TEXT,
                                 content TEXT,
                                 read INTEGER DEFAULT 0,
+                                date INTEGER DEFAULT CURRENT_TIMESTAMP,
                                 FOREIGN KEY (feed) REFERENCES feeds(id) ON DELETE CASCADE
                                 );"
                 @@db.execute "CREATE TABLE IF NOT EXISTS markers (
@@ -48,6 +48,39 @@ class Database
                 @@db.results_as_hash = true
             rescue => error
                 warn "error creating tables: #{error}"
+            end
+            begin
+                # upgrade task: entry table had no date column
+                @@db.execute "SELECT date FROM entries"
+            rescue
+                begin
+                    puts "entry table needs upgrade, doing that now"
+                    @@db.execute "CREATE TEMPORARY TABLE entries_temp(
+                                    id INTEGER,
+                                    feed INTEGER,
+                                    url TEXT,
+                                    title TEXT,
+                                    content TEXT,
+                                    read INTEGER DEFAULT 0
+                                    );"
+                    @@db.execute "INSERT INTO entries_temp SELECT * FROM entries"
+                    @@db.execute "DROP TABLE entries"
+                    @@db.execute "CREATE TABLE entries (
+                                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                    feed INTEGER,
+                                    url TEXT,
+                                    title TEXT,
+                                    content TEXT,
+                                    read INTEGER DEFAULT 0,
+                                    date INTEGER DEFAULT CURRENT_TIMESTAMP,
+                                    FOREIGN KEY (feed) REFERENCES feeds(id) ON DELETE CASCADE
+                                    );"
+                    @@db.execute "INSERT INTO entries(id, feed, url, title, content, read) SELECT * FROM entries_temp"
+                    @@db.execute "DROP TABLE entries_temp"
+                rescue => error
+                    warn "database ugprade failed: #{error}"
+                    abort("aborting")
+                end
             end
         end
     end
@@ -117,7 +150,7 @@ class Database
 
     def getEntryData(id:) 
         begin
-            return @@db.execute("SELECT url, title, content, feed FROM entries WHERE id = ?;", id.to_i)[0]
+            return @@db.execute("SELECT url, title, content, feed, date FROM entries WHERE id = ?;", id.to_i)[0]
         rescue => error
             warn "getEntryData: #{error}"
         end
@@ -128,8 +161,8 @@ class Database
             entries = []
             startId ||= 0
             if feed
-                @@db.execute("SELECT url, title, content, id FROM entries WHERE feed = ? AND read = 0 AND id > ? LIMIT 10;", feed.id.to_i, startId.to_i) do |row|
-                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: feed.id.to_i))
+                @@db.execute("SELECT url, title, content, id, date FROM entries WHERE feed = ? AND read = 0 AND id > ? LIMIT 10;", feed.id.to_i, startId.to_i) do |row|
+                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: feed.id.to_i, date: row["date"]))
                 end
             else
                 if read == false
@@ -140,8 +173,8 @@ class Database
                     order = "ORDER by id DESC"
                     # TODO: reverse order
                 end
-                @@db.execute("SELECT url, title, content, id, feed FROM entries WHERE read = #{read} AND id > ? #{order} LIMIT 10;", startId.to_i) do |row|
-                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: row["feed"].to_i))
+                @@db.execute("SELECT url, title, content, id, feed, date FROM entries WHERE read = #{read} AND id > ? #{order} LIMIT 10;", startId.to_i) do |row|
+                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: row["feed"].to_i, date: row["date"]))
                 end
             end
             return entries
@@ -156,14 +189,14 @@ class Database
             if startId
                 # the markers table has their own id order that needs to be mapped from the entry id
                 startId = @@db.execute("SELECT id FROM markers WHERE entry = ? LIMIT 1", startId)[0]["id"]  
-                @@db.execute("SELECT url, title, content, entries.id FROM entries JOIN markers ON (entries.id = markers.entry) 
+                @@db.execute("SELECT url, title, content, entries.id, date FROM entries JOIN markers ON (entries.id = markers.entry) 
                                 WHERE markers.id < ?
                               ORDER BY markers.id DESC LIMIT 10", startId) do |row|
-                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: nil))
+                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: nil, date: row["date"]))
                 end
             else 
-                  @@db.execute("SELECT url, title, content, entries.id FROM entries JOIN markers ON (entries.id = markers.entry) ORDER BY markers.id DESC LIMIT 10") do |row|
-                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: nil))
+                  @@db.execute("SELECT url, title, content, entries.id, date FROM entries JOIN markers ON (entries.id = markers.entry) ORDER BY markers.id DESC LIMIT 10") do |row|
+                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: nil, date: row["date"]))
                 end
             end
             return entries

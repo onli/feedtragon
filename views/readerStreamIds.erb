@@ -1,7 +1,7 @@
 <% if output == "json" %>
 {"itemRefs":[
 	<% entries.each do |entry| %>
-		{"id":"<%= entry.id %>","directStreamIds":[],"timestampUsec":"<%= DateTime.now.strftime('%s') %>"}<%= ',' if entry != entries.last %>
+		{"id":"<%= entry.id %>","directStreamIds":[],"timestampUsec":"<%= Time.parse(entry.date).strftime('%s') %>"}<%= ',' if entry != entries.last %>
 	<% end %>
 	],
 "continuation":"<%= entries.last.id %>"}
@@ -9,7 +9,7 @@
 <object>
 	<list name="itemRefs">
 		<% entries.each do |entry| %>
-			<object><number name="id"><%= entry.id %></number><list name="directStreamIds"></list><number name="timestampUsec"><%= DateTime.now.strftime('%s') %></number></object>
+			<object><number name="id"><%= entry.id %></number><list name="directStreamIds"></list><number name="timestampUsec"><%= Time.parse(entry.date).strftime('%s') %></number></object>
 		<% end %>
 	</list>
 	<string name="continuation"><%= entries.last.id %></string>

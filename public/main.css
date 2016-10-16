@@ -163,6 +163,14 @@ textarea {
     font-weight: 400;
 }
 
+.entryDate {
+    font-weight: 400;
+    float: right;
+    margin: 0;
+    font-size: 1rem;
+    color: #7F7F7F;
+}
+
 .entry pre {
     white-space: pre-wrap;
     word-wrap: break-word;

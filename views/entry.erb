@@ -1,7 +1,11 @@
 <li id="entry_<%= entry.id %>" class="entry">
-    <h2 class="entryTitle">
-        <a href="<%= entry.url %>"><%= entry.title %></a>
-    </h2>
+    <div>
+        <h3 class="entryDate"> <%= Time.parse(entry.date).strftime("%d.%m.%Y") %> </h3>
+        <h2 class="entryTitle">
+            <a href="<%= entry.url %>"><%= entry.title %></a>
+        </h2>
+    </div>
+    
     <div><%= entry.contentWithAbsLinks %></div>
     <% if entry.marked? %>
         <form class="mark" method="POST" action="<%=url '/' + entry.id.to_s + '/unmark' %>"><button class="button button-rounded" type="submit">&#9733;</button></form>

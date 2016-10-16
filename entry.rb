@@ -7,13 +7,15 @@ class Entry
     attr_accessor :url
     attr_accessor :content
     attr_accessor :feed_id
+    attr_accessor :date
 
-    def initialize(title: nil, url: nil, content: nil, feed_id: nil, id: nil)
+    def initialize(title: nil, url: nil, content: nil, feed_id: nil, id: nil, date: nil)
         self.title = title
         self.url = url
         self.content = content
         self.feed_id = feed_id
         self.id = id
+        self.date = date
         if id && (! title || ! url || ! content || ! feed_id)
             self.initializeById(id: id)
         end
@@ -25,6 +27,7 @@ class Entry
         self.url = data["url"]
         self.content = data["content"]
         self.feed_id = data["feed"]
+        self.date = data["date"]
     end
 
     def save!

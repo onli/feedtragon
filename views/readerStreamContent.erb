@@ -8,9 +8,9 @@
   <subtitle type="html"><%= feed.title %>/subtitle>
   <link rel="self" href="<%= request.url %>" />
   <gr:continuation><%= entries.last.id %></gr:continuation>
-  <updated><%= DateTime.now.rfc2822 %></updated>
+  <updated><%= Time.parse(entry.date).rfc2822 %></updated>
   <% entries.each do |entry| %>
-  <entry gr:crawl-timestamp-msec="<%= DateTime.now.strftime('%s') %>">
+  <entry gr:crawl-timestamp-msec="<%= Time.parse(entry.date).strftime('%s') %>">
 	<id gr:original-id="<%= entry.url %>">tag:google.com,2005:reader/item/<%= entry.id %></id>
 	<category term="user/01234567890123456789/state/com.google/reading-list" scheme="http://www.google.com/reader/" label="reading-list" />
 	<category term="user/01234567890123456789/state/com.google/fresh" scheme="http://www.google.com/reader/" label="fresh" />
