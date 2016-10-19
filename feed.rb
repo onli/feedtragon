@@ -4,8 +4,10 @@ class Feed
     attr_accessor :id
     attr_accessor :url
     attr_accessor :name
+    attr_accessor :user
 
-    def initialize(url: nil, id: nil, name: nil)
+    def initialize(url: nil, id: nil, name: nil, user:)
+        self.user = user
         self.url = url
         self.id = id
         name = url if name.nil?
@@ -52,7 +54,7 @@ class Feed
     end
 
     def entries(startId: 0)
-        Database.new.getEntries(self, startId)
+        Database.new.getEntries(self, startId, user: user)
     end
 
     def setName(name:)

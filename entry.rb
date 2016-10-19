@@ -8,8 +8,10 @@ class Entry
     attr_accessor :content
     attr_accessor :feed_id
     attr_accessor :date
+    attr_accessor :user
 
-    def initialize(title: nil, url: nil, content: nil, feed_id: nil, id: nil, date: nil)
+    def initialize(title: nil, url: nil, content: nil, feed_id: nil, id: nil, date: nil, user:)
+        self.user = user
         self.title = title
         self.url = url
         self.content = content

@@ -7,6 +7,7 @@ class Database
             @@db    # create a singleton - if this class-variable is uninitialized, this will fail and can then be initialized
         rescue
             @@db = SQLite3::Database.new "database.db"
+            # TODO: Upgrade task for multiuser tables
             begin
                 @@db.execute "CREATE TABLE IF NOT EXISTS feeds(
                                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,7 +29,6 @@ class Database
                                 url TEXT,
                                 title TEXT,
                                 content TEXT,
-                                read INTEGER DEFAULT 0,
                                 date INTEGER DEFAULT CURRENT_TIMESTAMP,
                                 FOREIGN KEY (feed) REFERENCES feeds(id) ON DELETE CASCADE
                                 );"
@@ -38,12 +38,29 @@ class Database
                                 comment TEXT,
                                 FOREIGN KEY (entry) REFERENCES entries(id) ON DELETE CASCADE
                                 );"
+                @@db.execute "CREATE TABLE IF NOT EXISTS users_entries (
+                                user TEXT,
+                                entry INTEGER,
+                                read INTEGER DEFAULT 1,
+                                FOREIGN KEY (user) REFERENCES users(mail) ON DELETE CASCADE,
+                                FOREIGN KEY (entry) REFERENCES entries(id) ON DELETE CASCADE,
+                                UNIQUE(user, entry)
+                );"
+                @@db.execute "CREATE TABLE IF NOT EXISTS users_feeds (
+                                user TEXT,
+                                feed INTEGER,
+                                name TEXT,
+                                FOREIGN KEY (user) REFERENCES users(mail) ON DELETE CASCADE,
+                                FOREIGN KEY (feed) REFERENCES feeds(id) ON DELETE CASCADE,
+                                UNIQUE(user, feed)
+                );"
                 @@db.execute "CREATE TABLE IF NOT EXISTS log (
                     name TEXT,
                     log TEXT
                 )";
                 @@db.execute "CREATE INDEX IF NOT EXISTS entries_read_idx ON entries(read);"
                 @@db.execute "CREATE INDEX IF NOT EXISTS entries_feed_idx ON entries(feed);"
+                @@db.execute "CREATE INDEX IF NOT EXISTS users_mail_idx ON users(mail);"
                 @@db.execute "PRAGMA foreign_keys = ON;"
                 @@db.results_as_hash = true
             rescue => error
@@ -82,6 +99,19 @@ class Database
                     abort("aborting")
                 end
             end
+            begin
+                # upgrade task: multiuser tables needs to be added
+                # TODO: Add feeds to users_feeds
+                @@db.execute "SELECT user FROM markers"
+            rescue
+                begin
+                    puts "database needs to be converted to multiuser setup, doing that now"
+                    @@db.execute "ALTER TABLE markers ADD user TEXT"
+                rescue => error
+                    warn "database ugprade failed: #{error}"
+                    abort("aborting")
+                end
+            end
         end
     end
 
@@ -103,7 +133,7 @@ class Database
         end
     end
 
-
+    # Not userspecific
     def setSubscribe(status, feed)
         begin
             @@db.execute("UPDATE feeds SET subscribed = ? WHERE id = ?;", status ? 1 : 0, feed.id.to_i)
@@ -112,6 +142,7 @@ class Database
         end
     end
 
+    # Not userspecific
     def getSubscribe(feed)
         begin
             return @@db.execute("SELECT subscribed FROM feeds  WHERE id = ?;", feed.id.to_i)[0]['subscribed'].to_i == 1
@@ -122,7 +153,7 @@ class Database
     
     def setRead(status, entry)
         begin
-            @@db.execute("UPDATE entries SET read = ? WHERE id = ?;", status ? 1 : 0, entry.id.to_i)
+            @@db.execute("INSERT OR REPLACE INTO users_entries(read, entry, user) VALUES(?, ? , ?);", status ? 1 : 0, entry.id.to_i, entry.user)
         rescue => error
             warn "setRead: #{error}"
         end
@@ -131,15 +162,16 @@ class Database
      def setMark(status, entry)
         begin
             if status
-                @@db.execute("INSERT OR IGNORE INTO markers(entry) VALUES (?)", entry.id.to_i)
+                @@db.execute("INSERT OR IGNORE INTO markers(entry, user) VALUES (?, ?)", entry.id.to_i, entry.user)
             else
-                @@db.execute("DELETE FROM markers WHERE entry == ?", entry.id.to_i)
+                @@db.execute("DELETE FROM markers WHERE entry == ? AND user == ?", entry.id.to_i, entry.user)
             end
         rescue => error
             warn "setMark: #{error}"
         end
     end
-    
+
+    # Not user specific
     def addEntry(entry, feed)
         begin
             return @@db.execute("INSERT INTO entries(url, title, content, feed) VALUES(?, ?, ?, ?);", entry.url, entry.title, entry.content, feed.to_i)
@@ -156,25 +188,26 @@ class Database
         end
     end
 
-    def getEntries(feed = nil, startId = nil, read = false)
+    def getEntries(feed = nil, startId = nil, read = false, user:)
         begin
             entries = []
             startId ||= 0
             if feed
-                @@db.execute("SELECT url, title, content, id, date FROM entries WHERE feed = ? AND read = 0 AND id > ? LIMIT 10;", feed.id.to_i, startId.to_i) do |row|
-                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: feed.id.to_i, date: row["date"]))
+                # LEFT OUTER join + users_entries.read: Show only those entries not marked read specifically for this user (0 or NULL)
+                @@db.execute("SELECT url, title, content, id, date FROM entries LEFT OUTER JOIN users_entries ON (users_entries.entry = entries.id) WHERE feed = ? AND (users_entries.read = 0 OR users_entries.read IS NULL) AND id > ? LIMIT 10;", feed.id.to_i, startId.to_i) do |row|
+                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: feed.id.to_i, date: row["date"], user: user))
                 end
             else
                 if read == false
-                    read = 0
+                    read = "0 OR read IS NULL"
                     order = "ORDER by id ASC"
                 else
                     read = 1
                     order = "ORDER by id DESC"
                     # TODO: reverse order
                 end
-                @@db.execute("SELECT url, title, content, id, feed, date FROM entries WHERE read = #{read} AND id > ? #{order} LIMIT 10;", startId.to_i) do |row|
-                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: row["feed"].to_i, date: row["date"]))
+                @@db.execute("SELECT url, title, content, id, date FROM entries LEFT OUTER JOIN users_entries ON (users_entries.entry = entries.id) WHERE read = #{read} AND id > ? #{order} LIMIT 10;", startId.to_i) do |row|
+                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: row["feed"].to_i, date: row["date"], user: user))
                 end
             end
             return entries
@@ -183,20 +216,20 @@ class Database
         end
     end
 
-    def getMarkedEntries(startId)
+    def getMarkedEntries(startId, user:)
         begin
             entries = []
             if startId
                 # the markers table has their own id order that needs to be mapped from the entry id
-                startId = @@db.execute("SELECT id FROM markers WHERE entry = ? LIMIT 1", startId)[0]["id"]  
+                startId = @@db.execute("SELECT id FROM markers WHERE entry = ? AND user = ? LIMIT 1", startId, user)[0]["id"]  
                 @@db.execute("SELECT url, title, content, entries.id, date FROM entries JOIN markers ON (entries.id = markers.entry) 
-                                WHERE markers.id < ?
-                              ORDER BY markers.id DESC LIMIT 10", startId) do |row|
-                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: nil, date: row["date"]))
+                                WHERE markers.id < ? AND user = ?
+                              ORDER BY markers.id DESC LIMIT 10", startId, usermail) do |row|
+                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: nil, date: row["date"], user: user))
                 end
             else 
-                  @@db.execute("SELECT url, title, content, entries.id, date FROM entries JOIN markers ON (entries.id = markers.entry) ORDER BY markers.id DESC LIMIT 10") do |row|
-                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: nil, date: row["date"]))
+                  @@db.execute("SELECT url, title, content, entries.id, date FROM entries JOIN markers ON (entries.id = markers.entry)  WHERE user = ? ORDER BY markers.id DESC LIMIT 10", user) do |row|
+                    entries.push(Entry.new(id: row["id"], title: row["title"], url: row["url"], content: row["content"], feed_id: nil, date: row["date"], user: user))
                 end
             end
             return entries
@@ -207,7 +240,7 @@ class Database
 
     def marked?(entry)
         begin
-            return @@db.execute("SELECT id FROM markers WHERE entry = ?", entry.id.to_i)[0] != nil
+            return @@db.execute("SELECT id FROM markers WHERE entry = ? AND user = ?", entry.id.to_i, user)[0] != nil
         rescue => error
             warn "marked?: #{error}"
         end
@@ -216,23 +249,25 @@ class Database
 
     def read?(entry)
         begin
-            return @@db.execute("SELECT id FROM entries WHERE id == ? AND read = 1", entry.id.to_i)[0] != nil
+            return @@db.execute("SELECT id FROM users_entries WHERE id == ? AND read = 1 AND user == ?", entry.id.to_i, entry.user)[0] != nil
         rescue => error
             warn "read?: #{error}"
         end
         return false
     end
 
-    def getFeeds(onlyUnread: true)
+    # onlyUnread: Get only feeds with entries not read by user
+    # user: user for which to get feeds (his email as string)
+    def getFeeds(onlyUnread: true, user:)
         begin
             feeds = []
             if onlyUnread
-                @@db.execute("SELECT DISTINCT feeds.url, feeds.id, feeds.name FROM feeds JOIN entries ON (entries.feed = feeds.id) WHERE entries.read = 0;") do |row|
-                    feeds.push(Feed.new(url: row["url"], name: row["name"], id: row["id"]))
+                @@db.execute("SELECT DISTINCT feeds.url, feeds.id, feeds.name FROM feeds JOIN users_feeds ON (users_feeds.feed = feeds.id) JOIN entries ON (entries.feed = feeds.id) LEFT OUTER JOIN users_entries ON (users_entries.entry = entries.id) WHERE  (users_entries.read = 0 OR users_entries.read IS NULL) AND users_feeds.user = ?;", user) do |row|
+                    feeds.push(Feed.new(url: row["url"], name: row["name"], id: row["id"], user: user))
                 end
             else
-                @@db.execute("SELECT url, id, name FROM feeds;") do |row|
-                    feeds.push(Feed.new(url: row["url"], name: row["name"], id: row["id"]))
+                @@db.execute("SELECT url, id, name FROM feeds JOIN users_feeds ON (users_feeds.feed = feeds.id) WHERE users_feeds.user = ?;", user) do |row|
+                    feeds.push(Feed.new(url: row["url"], name: row["name"], id: row["id"], user: user))
                 end
             end
             return feeds
@@ -301,9 +336,12 @@ class Database
         end
     end
 
-    def readall
+    def readall(user:)
         begin
-            @@db.execute("UPDATE entries SET read = 1 WHERE read = 0")
+            # Add entries to users_entries that were not added before
+            @@db.execute("INSERT OR IGNORE INTO users_entries(entry, user) select id, '#{user}' from entries WHERE feed IN (SELECT feed FROM users_feeds WHERE user = ?)", user)
+            # Set read to 1 in users_entries where it was 0 before
+            @@db.execute("UPDATE users_entries SET read = 1 WHERE read = 0 AND user = ?", user)
         rescue => error
             warn "readall: #{error}"
         end

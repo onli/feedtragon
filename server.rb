@@ -100,13 +100,13 @@ use Rack::Superfeedr do |superfeedr|
         feed_id = feed_id.to_i
         Database.new.log(name: "notification", log: body.to_s) if ! settings.production?
         notification = JSON.parse(body)
-        Feed.new(id: feed_id).setName(name: notification["title"]) if notification["title"] && ! notification["title"].empty?
+        Feed.new(id: feed_id, user: nil).setName(name: notification["title"]) if notification["title"] && ! notification["title"].empty?
         if notification["items"]
             websockets.each {|feedsockets| feedsockets.each {|feedsocket| feedsocket.send_data({:updated_feed => feed_id}.to_json)} if feedsockets }
             notification["items"].each do |item|
                 content = item["content"] || item["summary"]
                 content = item["content"].length > item["summary"].length ? item["content"] : item["summary"]  if item["content"] && item["summary"]
-                entry = Entry.new(url: item["permalinkUrl"], title: item["title"], content: content, feed_id: feed_id).save!
+                entry = Entry.new(url: item["permalinkUrl"], title: item["title"], content: content, feed_id: feed_id, user: nil).save!
                 websockets[feed_id].each {|feedsocket| feedsocket.send_data({:new_entry => entry.id}.to_json) if feedsocket} if websockets[feed_id]
             end
         else
@@ -115,7 +115,7 @@ use Rack::Superfeedr do |superfeedr|
                 puts "unsubscribing #{feed_id}"
                 Rack::Superfeedr.unsubscribe url, feed_id do |n|
                     puts "success!"
-                    Feed.new(id: feed_id).unsubscribed!
+                    Feed.new(id: feed_id, user: nil).unsubscribed!
                 end
             end
         end
@@ -123,7 +123,7 @@ use Rack::Superfeedr do |superfeedr|
 end
 
 ## bazqux flavored reader api ##
-
+# TODO: Make multiuser
 post '/accounts/ClientLogin' do
     if Argon2::Password.verify_password(params["Passwd"], Database.new.getOption("clientPassword"))
         ctoken = SecureRandom.urlsafe_base64(256)
@@ -302,11 +302,10 @@ get %r{/reader/api/0/stream/contents(.*)}, %r{/reader/atom(.*)} do |feedId|
 end
 
 post '/reader/api/0/edit-tag' do
-    puts params
     if apiAccess!(params["T"])
         entries = parseItemIds(request: request)
         case params["a"]
-        when "user/-/state/com.google/read" then entries.each{|entry| entry.read? ? entry.unread! : entry.read! }; return "OK" # return something to try to prevent clients from thinking it failed (what is ht expected output?)
+        when "user/-/state/com.google/read" then entries.each{|entry| entry.read? ? entry.unread! : entry.read! }; return "OK" # return something to try to prevent clients from thinking it failed (what is the expected output?)
         when "user/-/state/com.google/starred" then entries.each{|entry| entry.marked? ? entry.unmark! : entry.mark! }; return "OK";
         end
         return ""
@@ -373,7 +372,7 @@ end
 get '/feeds.opml' do
     protected!
     content_type 'text/x-opml'
-    erb :export, :layout => false, :locals => {:feeds => Database.new.getFeeds(onlyUnread: false) }
+    erb :export, :layout => false, :locals => {:feeds => Database.new.getFeeds(onlyUnread: false, user: authorized_email) }
 end
 
 def subscribe(url:, name:)
@@ -395,52 +394,52 @@ end
 
 post %r{/([0-9]+)/read} do |id|
     protected!
-    Entry.new(id: id).read!
+    Entry.new(id: id, user: authorized_email).read!
     return id
 end
 
 post %r{/([0-9]+)/unread} do |id|
     protected!
-    Entry.new(id: id).unread!
+    Entry.new(id: id, user: authorized_email).unread!
     return id
 end
 
 post %r{/([0-9]+)/mark} do |id|
     protected!
-    Entry.new(id: id).mark!
+    Entry.new(id: id, user: authorized_email).mark!
     return id
 end
 
 post %r{/([0-9]+)/unmark} do |id|
     protected!
-    Entry.new(id: id).unmark!
+    Entry.new(id: id, user: authorized_email).unmark!
     return id
 end
 
 post '/readall' do
     protected!
-    params[:ids].each {|id| Entry.new(id: id).read!} if params[:ids]
-    Database.new.readall if params[:all]
+    params[:ids].each {|id| Entry.new(id: id, user: authorized_email).read!} if params[:ids]
+    Database.new.readall(user: authorized_email) if params[:all]
     redirect url '/'
 end
 
 get %r{/([0-9]+)/feedlink} do |id|
     protected!
-    erb :feedlink, :layout => false, :locals => {:feed => Feed.new(id: id), :current_feed_id => nil}
+    erb :feedlink, :layout => false, :locals => {:feed => Feed.new(id: id, user: authorized_email), :current_feed_id => nil}
 end
 
 get %r{/([0-9]+)/entry} do |id|
     protected!
-    erb :entry, :layout => false, :locals => {:entry => Entry.new(id: id)}
+    erb :entry, :layout => false, :locals => {:entry => Entry.new(id: id,user: authorized_email)}
 end
 
 get %r{/(.*)/entries} do |feed_id|
     protected!
     entries = []
     if (feed_id == "marked")
-        feed_entries = Database.new.getMarkedEntries(params[:startId])
+        feed_entries = Database.new.getMarkedEntries(params[:startId], user: authorized_email)
     else 
-        feed_entries = Feed.new(id: feed_id).entries(startId: params[:startId])
+        feed_entries = Feed.new(id: feed_id, user: authorized_email).entries(startId: params[:startId])
     end
     feed_entries.each{|entry| entries.push(erb :entry, :layout => false, :locals => {:entry => entry})}
     {:entries => entries}.to_json
@@ -463,14 +462,14 @@ post '/setPassword' do
     db = Database.new
     hasher = Argon2::Password.new
     hashed_password = hasher.create(params["clientPassword"])
-    # Argon2::Password.verify_password(password, Database.new.getOption("clientPassword"))
     db.setOption("clientPassword", hashed_password)
     redirect url '/'
 end
 
 websocket '/updated' do
     protected!
-    ws.onmessage do |msg| 
+    ws.onmessage do |msg|
+        # TODO: notify only subscribers to that feed
         feedid = JSON.parse(msg)["feedid"].to_i
         websockets[feedid] ? websockets[feedid] << ws : websockets[feedid] = [ws]
     end
@@ -482,20 +481,21 @@ end
 
 get %r{/(.*)/feed} do |feed_url|
     halt 404 if feed_url != gen_secret_url.to_s
+    # TODO: Determine which user this belongs to
     headers "Content-Type"   => "application/rss+xml"
     erb :feed, :layout => false, :locals => {:entries => Database.new.getMarkedEntries(nil)}
 end
 
 get %r{/([0-9]+)} do |id|
-    erb :entrylist, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true), :entries => Feed.new(id: id).entries(startId: params[:startId]), :current_feed_id => id}
+    erb :entrylist, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true, user: authorized_email), :entries => Feed.new(id: id, user: authorized_email).entries(startId: params[:startId]), :current_feed_id => id}
 end
 
 get '/settings' do
-    erb :settings, :locals => {:feeds => Database.new.getFeeds, :entries => nil, :current_feed_id => nil, :allFeeds => Database.new.getFeeds(onlyUnread: false)}
+    erb :settings, :locals => {:feeds => Database.new.getFeeds(user: authorized_email), :entries => nil, :current_feed_id => nil, :allFeeds => Database.new.getFeeds(onlyUnread: false, usermail: authorized_email)}
 end
 
 get '/marked' do
-    erb :entrylist, :locals => {:feeds => Database.new.getFeeds, :entries => Database.new.getMarkedEntries(params[:startId]), :current_feed_id => 'marked'}
+    erb :entrylist, :locals => {:feeds => Database.new.getFeeds(user: authorized_email), :entries => Database.new.getMarkedEntries(params[:startId], user: authorized_email), :current_feed_id => 'marked'}
 end
 
 get '/' do
@@ -503,6 +503,6 @@ get '/' do
         Database.new.addUser('admin', authorized_email) if ! authorized_email.nil?
         erb :installer, :layout => false
     else
-        erb :index, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true), :current_feed_id => nil}
+        erb :index, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true, user: authorized_email), :current_feed_id => nil}
     end
 end
