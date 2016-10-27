@@ -1,0 +1,21 @@
+<main id="entries">
+	<nav id="settingsNav">
+		<ol>
+			<li><a href="<%= url '/settings' %>">Settings</a></li>
+			<li class="current">Administration</li>
+		</ol>
+	</nav>
+	<section id="userForm">
+		<form method="POST" action="/setUsers">
+            <h3>User Accounts</h3>
+            <ol id="userList">
+				<% users.each_with_index do |user, index| %>
+					<li class="userInput">
+						<input type="email" name="users[mail][<%= index %>]" value="<%= user["mail"] %>" />
+					</li>
+				<% end %>
+            </ol>
+            <button type="submit">OK</button>
+        </form>
+	</section>
+</main>

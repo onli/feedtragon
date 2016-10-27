@@ -1,4 +1,12 @@
 <main id="entries">
+    <% if isAdmin? %>
+        <nav id="settingsNav">
+            <ol>
+                <li class="current">Settings</li>
+                <li><a href="<%= url '/admin' %>">Administration</a></li>
+            </ol>
+        </nav>
+    <% end %>
     <%= erb :addForm %>
     <section id="exportForm">
         <h2>Export</h2>

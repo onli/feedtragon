@@ -236,7 +236,10 @@ textarea {
 
 #unsubscribeForm,
 #addForms,
-#exportForm  {
+#exportForm,
+#superfeedrForm,
+#clientForm,
+#userForm  {
     padding-top: 2em;
     padding-left: 2em;
 }
@@ -366,7 +369,27 @@ textarea {
     }
 }
 
+#settingsNav li {
+    display: inline-block;
+    width: 10em;
+    border: 1px solid #f22f49;
+    box-shadow: 3px 3px 5px 0px #996E6E;
+    margin: 0;
+    padding: 0.3em;
+}
 
+#settingsNav li.current {
+    color: #717171;
+    box-shadow: 2px 2px 5px 0px #996E6E;
+}
+
+#settingsNav a {
+    color: #333;
+}
+
+#settingsNav a:focus {
+    color: #f22f49 !important;
+}
 
 /*! @license
 * Copyright 2012-2014 Alex Wolfe and Rob Levin

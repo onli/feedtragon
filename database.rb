@@ -16,8 +16,8 @@ class Database
                                 subscribed INTEGER DEFAULT 0
                                 );"
                 @@db.execute "CREATE TABLE IF NOT EXISTS users(
-                                name TEXT PRIMARY KEY,
-                                mail TEXT UNIQUE
+                                mail TEXT PRIMARY KEY,
+                                role TEXT
                                 );"
                 @@db.execute "CREATE TABLE IF NOT EXISTS options(
                                 name TEXT PRIMARY KEY,
@@ -107,6 +107,29 @@ class Database
                 begin
                     puts "database needs to be converted to multiuser setup, doing that now"
                     @@db.execute "ALTER TABLE markers ADD user TEXT"
+                rescue => error
+                    warn "database ugprade failed: #{error}"
+                    abort("aborting")
+                end
+            end
+
+            begin
+                # upgrade task: user table changed to not have names, only roles
+                @@db.execute "SELECT role FROM users"
+            rescue
+                begin
+                    @@db.execute "PRAGMA foreign_keys = OFF;"
+                    puts "database needs to be converted to multiuser setup, doing that now"
+                    @@db.execute "CREATE TEMPORARY TABLE users_temp(
+                        mail TEXT, role TEXT
+                    )"
+                    @@db.execute "INSERT INTO users_temp(mail, role) SELECT mail, name FROM users"
+                    @@db.execute "DROP TABLE users"
+                    @@db.execute "CREATE TABLE users(mail TEXT PRIMARY KEY, role TEXT)"
+                    
+                    @@db.execute "INSERT INTO users(mail, role) SELECT mail, role FROM users_temp"
+                    @@db.execute "DROP TABLE users_temp"
+                    @@db.execute "PRAGMA foreign_keys = ON;"
                 rescue => error
                     warn "database ugprade failed: #{error}"
                     abort("aborting")
@@ -280,15 +303,15 @@ class Database
 
     def getAdminMail()
         begin
-            return @@db.execute("SELECT mail FROM users WHERE name = 'admin' LIMIT 1;")[0]['mail']
+            return @@db.execute("SELECT mail FROM users WHERE role = 'admin' LIMIT 1;")[0]['mail']
         rescue => error
             warn "getAdminMail: #{error}"
         end
     end
 
-    def addUser(name, mail)
+    def addUser(role, mail)
         begin
-            @@db.execute("INSERT INTO users(name, mail) VALUES(?, ?);", name, mail)
+            @@db.execute("INSERT OR IGNORE INTO users(mail, role) VALUES(?, ?);", mail, role)
         rescue => error
             warn "addUser: #{error}"
         end
@@ -386,5 +409,13 @@ class Database
             warn "getUserByToken: #{error}"
         end
         return false
+    end
+
+    def getUsers()
+        begin
+            return @@db.execute("SELECT role, mail FROM users")
+         rescue => error
+            warn "getUsers: #{error}"
+        end
     end
 end

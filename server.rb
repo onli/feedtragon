@@ -49,6 +49,14 @@ helpers do
         end
     end
 
+    def adminProtected!
+        if (isRegistered? && isAdmin?)
+            return true
+        else
+            halt 401, erb(:login, :locals => {:feeds => nil, :current_feed_id => nil})
+        end
+    end
+
     def truncate(text, length, append)
         return text.gsub(/^(.{#{length},}?).*$/m,'\1' + append)
     end
@@ -269,6 +277,16 @@ post '/setPassword' do
     redirect url '/'
 end
 
+post '/setUsers' do
+    adminProtected!
+    db = Database.new
+    users = params[:users]["mail"]
+    users.each do |_, mail|
+        db.addUser("", mail.strip)
+    end
+    redirect url '/admin'
+end
+
 websocket '/updated' do
     protected!
     ws.onmessage do |msg|
@@ -300,6 +318,13 @@ get '/settings' do
     protected!
     erb :settings, :locals => {:feeds => Database.new.getFeeds(user: authorized_email), :entries => nil, :current_feed_id => nil, :allFeeds => Database.new.getFeeds(onlyUnread: false, user: authorized_email)}
 end
+
+get '/admin' do
+    adminProtected!
+    db = Database.new
+    erb :admin, :locals => {:feeds => db.getFeeds(user: authorized_email), :entries => nil, :current_feed_id => nil, :users => db.getUsers}
+end
+
 
 get '/marked' do
     protected!

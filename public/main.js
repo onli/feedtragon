@@ -247,6 +247,23 @@
         });
     }
 
+    function addUserInputButton() {
+        var tagString = "<button type='button' id='addUserInput'>+</button>";
+        var range = document.createRange();
+        //range.selectNode(document.querySelector("#unsubscribeList"));
+        var documentFragment = range.createContextualFragment(tagString);
+        var userForm = document.querySelector("#userForm ol")
+        userForm.appendChild(documentFragment);
+        document.querySelector('#addUserInput').addEventListener('click', function(evt) {
+            this.parentNode.removeChild(this)
+            var inputs = document.querySelectorAll('.userInput');
+            var inputTagString = '<li class="userInput"><input type="email" name="users[mail][' + inputs.length + ']" value="" /></li>';
+            var inputFragment = range.createContextualFragment(inputTagString);
+            userForm.appendChild(inputFragment);
+            addUserInputButton();
+        });
+    }
+
     var contentLoaded = false;
     document.addEventListener('DOMContentLoaded', function() {
         var contentLoaded = true;
@@ -283,6 +300,13 @@
         }
         if (document.querySelector('#unsubscribeForm') && ! document.querySelector('#toggleUnsubscribe')) {
             addSelectAllButton();
+        }
+        if (document.querySelector('#userForm') && ! document.querySelector('#addUserInput')) {
+            addUserInputButton();
+            document.querySelector('#userForm').addEventListener('keyup', function(evt) {
+                // to disable the global feed hotkeys
+                evt.stopPropagation();
+            });
         }
     });
 
