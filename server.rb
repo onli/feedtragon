@@ -54,7 +54,7 @@ helpers do
     end
 
     def secret_url
-        gen_secret_url
+        return (Database.new.getOption(authorized_email + "_secret") or gen_secret_url)
     end
 
     def getOption(name)
@@ -86,7 +86,9 @@ end
 
 def gen_secret_url()
     begin
-        return Digest::RMD160.new << Database.new.getOption("secret")
+        db = Database.new
+        db.setOption(authorized_email + "_secret", SecureRandom.urlsafe_base64(256)) if ! db.getOption(authorized_email + "_secret")
+        return Digest::RMD160.new << db.getOption(authorized_email + "secret")
     rescue TypeError
         return ""
     end
@@ -486,10 +488,12 @@ websocket '/updated' do
 end
 
 get %r{/(.*)/feed} do |feed_url|
-    halt 404 if feed_url != gen_secret_url.to_s
-    # TODO: Determine which user this belongs to
+    db = Database.new
+    unless (db.getOption(params[:user] + "_secret") == feed_url) 
+        halt 404
+    end
     headers "Content-Type"   => "application/rss+xml"
-    erb :feed, :layout => false, :locals => {:entries => Database.new.getMarkedEntries(nil)}
+    erb :feed, :layout => false, :locals => {:entries => Database.new.getMarkedEntries(nil, user: params[:user])}
 end
 
 get %r{/([0-9]+)} do |id|

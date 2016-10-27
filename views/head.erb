@@ -25,5 +25,5 @@
     <link rel="icon" type="image/png" href="<%= url '/favicon-32x32.png' %>" sizes="32x32">
     <meta name="msapplication-TileColor" content="#00a300">
     <meta name="msapplication-TileImage" content="<%= url '/mstile-144x144.png' %>">
-    <% if current_feed_id == 'marked' %><link rel="alternate"  type="application/rss+xml" href="<%= url "/" + secret_url.to_s + '/feed' %>" title="Marked Articles"><% end %>
+    <% if current_feed_id == 'marked' %><link rel="alternate"  type="application/rss+xml" href="<%= url "/" + secret_url.to_s + '/feed?user=' + authorized_email %>" title="Marked Articles"><% end %>
 </head>
