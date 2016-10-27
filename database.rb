@@ -34,9 +34,12 @@ class Database
                                 );"
                 @@db.execute "CREATE TABLE IF NOT EXISTS markers (
                                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                                entry INTEGER UNIQUE,
+                                entry INTEGER,
                                 comment TEXT,
-                                FOREIGN KEY (entry) REFERENCES entries(id) ON DELETE CASCADE
+                                user TEXT,
+                                FOREIGN KEY (user) REFERENCES users(mail) ON DELETE CASCADE,
+                                FOREIGN KEY (entry) REFERENCES entries(id) ON DELETE CASCADE,
+                                UNIQUE(user, entry)
                                 );"
                 @@db.execute "CREATE TABLE IF NOT EXISTS users_entries (
                                 user TEXT,
@@ -67,7 +70,7 @@ class Database
                 warn "error creating tables: #{error}"
             end
             begin
-                # upgrade task: entry table had no date column
+                # upgrade task 1.0: entry table had no date column
                 @@db.execute "SELECT date FROM entries"
             rescue
                 begin
@@ -99,27 +102,14 @@ class Database
                     abort("aborting")
                 end
             end
-            begin
-                # upgrade task: multiuser tables needs to be added
-                # TODO: Add feeds to users_feeds
-                @@db.execute "SELECT user FROM markers"
-            rescue
-                begin
-                    puts "database needs to be converted to multiuser setup, doing that now"
-                    @@db.execute "ALTER TABLE markers ADD user TEXT"
-                rescue => error
-                    warn "database ugprade failed: #{error}"
-                    abort("aborting")
-                end
-            end
 
             begin
-                # upgrade task: user table changed to not have names, only roles
+                # upgrade task 1.0: user table changed to not have names, only roles
                 @@db.execute "SELECT role FROM users"
             rescue
                 begin
                     @@db.execute "PRAGMA foreign_keys = OFF;"
-                    puts "database needs to be converted to multiuser setup, doing that now"
+                    puts "user table needs to be converted to multiuser setup, doing that now"
                     @@db.execute "CREATE TEMPORARY TABLE users_temp(
                         mail TEXT, role TEXT
                     )"
@@ -129,6 +119,41 @@ class Database
                     
                     @@db.execute "INSERT INTO users(mail, role) SELECT mail, role FROM users_temp"
                     @@db.execute "DROP TABLE users_temp"
+                    @@db.execute "PRAGMA foreign_keys = ON;"
+                rescue => error
+                    warn "database ugprade failed: #{error}"
+                    abort("aborting")
+                end
+            end
+
+            begin
+                # upgrade task 1.0: multiuser tables needs to be added
+                @@db.execute "SELECT user FROM markers"
+            rescue
+                begin
+                    @@db.execute "PRAGMA foreign_keys = OFF;"
+                    puts "feed table needs to be converted to multiuser setup, doing that now"
+                    @@db.execute "ALTER TABLE markers ADD user TEXT"
+                    @@db.execute "INSERT INTO users_feeds(feed, name) SELECT id, name FROM feeds;"
+                    @@db.execute("UPDATE users_feeds SET user = ?;", self.getAdminMail)
+                    @@db.execute "INSERT INTO users_entries(entry, read) SELECT id, read FROM entries WHERE read = 1;"
+                    @@db.execute("UPDATE users_entries SET user = ?;", self.getAdminMail)
+                    @@db.execute "CREATE TEMPORARY TABLE markers_temp(
+                        id INTEGER, entry INTEGER, comment TEXT
+                    )"
+                    @@db.execute "INSERT INTO markers_temp(id, entry, comment) SELECT id, entry, comment FROM markers"
+                    @@db.execute "DROP TABLE markers"
+                    @@db.execute "CREATE TABLE markers(
+                                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                entry INTEGER,
+                                comment TEXT,
+                                user TEXT,
+                                FOREIGN KEY (user) REFERENCES users(mail) ON DELETE CASCADE,
+                                FOREIGN KEY (entry) REFERENCES entries(id) ON DELETE CASCADE,
+                                UNIQUE(user, entry)
+                                );"
+                    @@db.execute "INSERT INTO markers(id, entry, comment) SELECT id, entry, comment FROM markers_temp"
+                    @@db.execute("UPDATE markers SET user = ?;", self.getAdminMail)
                     @@db.execute "PRAGMA foreign_keys = ON;"
                 rescue => error
                     warn "database ugprade failed: #{error}"
