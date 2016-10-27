@@ -1,18 +1,20 @@
-<section id="feeds">
-    <form id="feedReadall" method="POST" action="<%= url '/readall' %>">
-        <input type="hidden" name="all" value="true" />
-        <button type="submit" class="button button-rounded" title="Mark all as read">&#10003;</button>
-    </form>
-    <a id="markLink" <%= 'class="current"' if current_feed_id == 'marked' %> href="<%= url '/marked' %>">Marked</a>
-    <select id="mobileList">
+<% if ((! current_feed_id.nil?) || (! feeds.nil?)) %>
+    <section id="feeds">
+        <form id="feedReadall" method="POST" action="<%= url '/readall' %>">
+            <input type="hidden" name="all" value="true" />
+            <button type="submit" class="button button-rounded" title="Mark all as read">&#10003;</button>
+        </form>
+        <a id="markLink" <%= 'class="current"' if current_feed_id == 'marked' %> href="<%= url '/marked' %>">Marked</a>
+        <select id="mobileList">
+            <% feeds.each do |feed| %>
+                <option value="<%= url '/' + feed.id.to_s %>" <%= feed.id.to_i == current_feed_id.to_i ? 'selected="true"' : ''%>><%= truncate(feed.name, 35, "...") %></option>
+            <% end %>
+        </select>
+        <ol id="feedList">
         <% feeds.each do |feed| %>
-            <option value="<%= url '/' + feed.id.to_s %>" <%= feed.id.to_i == current_feed_id.to_i ? 'selected="true"' : ''%>><%= truncate(feed.name, 35, "...") %></option>
+            <li class="feedlink<%= feed.id.to_i == current_feed_id.to_i ? ' current' : ''%>" id="feed_<%= feed.id %>"><a href="<%= url '/' + feed.id.to_s %>"><%= truncate(feed.name, 35, "...") %></a></li>
         <% end %>
-    </select>
-    <ol id="feedList">
-    <% feeds.each do |feed| %>
-        <li class="feedlink<%= feed.id.to_i == current_feed_id.to_i ? ' current' : ''%>" id="feed_<%= feed.id %>"><a href="<%= url '/' + feed.id.to_s %>"><%= truncate(feed.name, 35, "...") %></a></li>
-    <% end %>
-    </ol>
-    <a id="addLink" href="<%= url '/settings' %>">&#9881;</a>
-</section>
+        </ol>
+        <a id="addLink" href="<%= url '/settings' %>">&#9881;</a>
+    </section>
+<% end %>

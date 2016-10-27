@@ -37,9 +37,15 @@ helpers do
         return false
     end
 
+    def isRegistered?
+        if authorized?
+            return Database.new.registered?(authorized_email)
+        end
+    end
+
     def protected!
-        unless isAdmin?
-            throw(:halt, [401, "Not authorized\n"])
+        unless isRegistered?
+            halt 401, erb(:login, :locals => {:feeds => nil, :current_feed_id => nil})
         end
     end
 
@@ -335,7 +341,7 @@ post '/subscribe' do
     protected!
     # the superfeedr middleware needs to be set if we are not running on /, and it needs to be relative
     Rack::Superfeedr.base_path = url("/superfeedr/feed/", false)
-    subscribe(url: params[:url], name: params[:url])
+    subscribe(url: params[:url], name: params[:url], user: authorized_email)
     redirect url '/'
 end
 
@@ -344,9 +350,9 @@ post '/unsubscribe' do
     Rack::Superfeedr.base_path = url("/superfeedr/feed/", false)
     begin
         params["feeds"].each do |id, _|
-            feed = Feed.new(id: id)
-            Rack::Superfeedr.unsubscribe(feed.url, id)
-            feed.unsubscribed!
+            feed = Feed.new(id: id, user: authorized_email)
+            feed.unsubscribe!
+            Rack::Superfeedr.unsubscribe(feed.url, id) if (feed.subscribers? == 0) 
         end
     rescue => error
         warn "unsubscribe: #{error}"
@@ -361,7 +367,7 @@ post '/import' do
     doc = Nokogiri::XML(opml)
     doc.xpath("/opml/body/outline").map do |outline|
         begin
-            subscribe(url: outline.attr("xmlUrl"), name: outline.attr("title"))
+            subscribe(url: outline.attr("xmlUrl"), name: outline.attr("title"), user: authorized_email)
         rescue Net::ReadTimeout
             warn "could not subscribe to #{outline.attr("xmlUrl")}"
         end
@@ -375,9 +381,9 @@ get '/feeds.opml' do
     erb :export, :layout => false, :locals => {:feeds => Database.new.getFeeds(onlyUnread: false, user: authorized_email) }
 end
 
-def subscribe(url:, name:)
+def subscribe(url:, name:, user:)
     protected!
-    feed = Feed.new(url: url, name: name).save!
+    feed = Feed.new(url: url, name: name, user: user).save!
     if ! feed.subscribed?
         Rack::Superfeedr.subscribe(feed.url, feed.id, {retrieve: true, format: 'json'}) do |body, success, response|
             if success
@@ -430,7 +436,7 @@ end
 
 get %r{/([0-9]+)/entry} do |id|
     protected!
-    erb :entry, :layout => false, :locals => {:entry => Entry.new(id: id,user: authorized_email)}
+    erb :entry, :layout => false, :locals => {:entry => Entry.new(id: id, user: authorized_email)}
 end
 
 get %r{/(.*)/entries} do |feed_id|
@@ -487,14 +493,17 @@ get %r{/(.*)/feed} do |feed_url|
 end
 
 get %r{/([0-9]+)} do |id|
+    protected!
     erb :entrylist, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true, user: authorized_email), :entries => Feed.new(id: id, user: authorized_email).entries(startId: params[:startId]), :current_feed_id => id}
 end
 
 get '/settings' do
-    erb :settings, :locals => {:feeds => Database.new.getFeeds(user: authorized_email), :entries => nil, :current_feed_id => nil, :allFeeds => Database.new.getFeeds(onlyUnread: false, usermail: authorized_email)}
+    protected!
+    erb :settings, :locals => {:feeds => Database.new.getFeeds(user: authorized_email), :entries => nil, :current_feed_id => nil, :allFeeds => Database.new.getFeeds(onlyUnread: false, user: authorized_email)}
 end
 
 get '/marked' do
+    protected!
     erb :entrylist, :locals => {:feeds => Database.new.getFeeds(user: authorized_email), :entries => Database.new.getMarkedEntries(params[:startId], user: authorized_email), :current_feed_id => 'marked'}
 end
 
@@ -503,6 +512,7 @@ get '/' do
         Database.new.addUser('admin', authorized_email) if ! authorized_email.nil?
         erb :installer, :layout => false
     else
+        protected!
         erb :index, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true, user: authorized_email), :current_feed_id => nil}
     end
 end

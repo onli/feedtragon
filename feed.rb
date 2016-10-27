@@ -49,7 +49,7 @@ class Feed
         Database.new.getSubscribe(self)
     end
 
-    def unsubscribed!
+    def unsubscribe!
         Database.new.setSubscribe(false, self)
     end
 
@@ -59,5 +59,9 @@ class Feed
 
     def setName(name:)
         Database.new.setName(name, self)
+    end
+
+    def subscribers
+        Database.new.getSubscribers(self)
     end
 end

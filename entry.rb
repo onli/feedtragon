@@ -33,7 +33,7 @@ class Entry
     end
 
     def save!
-        self.id = Database.new.addEntry(self,feed_id) || self.id
+        self.id = Database.new.addEntry(self, feed_id) || self.id
         return self
     end
 

@@ -115,10 +115,12 @@ class Database
         end
     end
 
-    def addFeed(feed)
+    def addFeed(feed, user:)
         begin
             @@db.execute("INSERT INTO feeds(url, name)  VALUES(?, ?);", feed.url, feed.name)
-            return @@db.last_insert_row_id()
+            feed_id = @@db.last_insert_row_id()
+            @@db.execute("INSERT INTO users_feeds(user, feed, name)  VALUES(?, ?, ?);", feed.user, feed_id, feed.name)
+            return feed_id
         rescue => error
             warn "addFeed: #{error}"
         end
@@ -352,6 +354,22 @@ class Database
             @@db.execute("UPDATE feeds SET name = ? WHERE id = ?;", name, feed.id.to_i)
         rescue => error
             warn "setName: #{error}"
+        end
+    end
+
+    def registered?(mail)
+        begin
+            return @@db.execute("SELECT mail FROM users WHERE mail = ?", mail).size > 0
+        rescue => error
+            warn "registered?: #{error}"
+        end
+    end
+
+    def getSubscribers(feed)
+        begin
+            return @@db.execute("SELECT feed FROM users_feeds WHERE feed = ?", feed.id).size
+        rescue => error
+            warn "getSubscribers: #{error}"
         end
     end
 end
