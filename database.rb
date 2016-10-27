@@ -372,4 +372,19 @@ class Database
             warn "getSubscribers: #{error}"
         end
     end
+
+    def getUserByToken(token, length = 0)
+        begin
+            if length == 0
+                return @@db.execute("SELECT value FROM options WHERE name LIKE ?", token)[0]['value']
+            else
+                if token.size == length
+                    return @@db.execute("SELECT value FROM options WHERE name LIKE ?", "#{token}%")[0]['value']
+                end
+            end
+        rescue => error
+            warn "getUserByToken: #{error}"
+        end
+        return false
+    end
 end
