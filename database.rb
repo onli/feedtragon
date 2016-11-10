@@ -7,7 +7,6 @@ class Database
             @@db    # create a singleton - if this class-variable is uninitialized, this will fail and can then be initialized
         rescue
             @@db = SQLite3::Database.new "database.db"
-            # TODO: Upgrade task for multiuser tables
             begin
                 @@db.execute "CREATE TABLE IF NOT EXISTS feeds(
                                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -61,9 +60,6 @@ class Database
                     name TEXT,
                     log TEXT
                 )";
-                @@db.execute "CREATE INDEX IF NOT EXISTS entries_read_idx ON entries(read);"
-                @@db.execute "CREATE INDEX IF NOT EXISTS entries_feed_idx ON entries(feed);"
-                @@db.execute "CREATE INDEX IF NOT EXISTS users_mail_idx ON users(mail);"
                 @@db.execute "PRAGMA foreign_keys = ON;"
                 @@db.results_as_hash = true
             rescue => error
