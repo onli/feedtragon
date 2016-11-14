@@ -129,8 +129,8 @@ use Rack::Superfeedr do |superfeedr|
                 # this was not a ping && for more than a week superfeedr was unable to parse this, so we need to unsubscribe to reduce load
                 puts "unsubscribing #{feed_id}"
                 Rack::Superfeedr.unsubscribe url, feed_id do |n|
-                    puts "success!"
-                    Feed.new(id: feed_id, user: nil).unsubscribed!
+                    puts "unsubscribed feed"
+                    Feed.new(id: feed_id, user: nil).unsubscribe!
                 end
             end
         end
@@ -157,8 +157,13 @@ post '/unsubscribe' do
     begin
         params["feeds"].each do |id, _|
             feed = Feed.new(id: id, user: authorized_email)
-            feed.unsubscribe!
-            Rack::Superfeedr.unsubscribe(feed.url, id) if (feed.subscribers? == 0) 
+            feed.unsubscribeUser!
+            if (feed.subscribers == 0) 
+                Rack::Superfeedr.unsubscribe(feed.url, id) do |n|
+                    puts "unsubscribed feed!"
+                    Feed.new(id: feed.id, user: nil).unsubscribe!
+                end
+            end
         end
     rescue => error
         warn "unsubscribe: #{error}"

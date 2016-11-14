@@ -41,16 +41,24 @@ class Feed
         return self
     end
 
+    # mark that this feed is subscribed at superfeedr
     def subscribed!
         Database.new.setSubscribe(true, self)
     end
 
+    # ask if this feed is subscribed at superfeedr
     def subscribed?
         Database.new.getSubscribe(self)
     end
 
+    # feed is no longer subscribed at superfeedr
     def unsubscribe!
         Database.new.setSubscribe(false, self)
+    end
+
+    # user no longer wants to read that feed
+    def unsubscribeUser!
+        Database.new.unsubscribeUser(self)
     end
 
     def entries(startId: 0)
@@ -61,6 +69,7 @@ class Feed
         Database.new.setName(name, self)
     end
 
+    # how many users subscribe to this feed
     def subscribers
         Database.new.getSubscribers(self)
     end

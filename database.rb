@@ -162,7 +162,7 @@ class Database
     def addFeed(feed)
         begin
             @@db.execute("INSERT OR IGNORE INTO feeds(url, name)  VALUES(?, ?);", feed.url, feed.name)
-            feed_id = @@db.last_insert_row_id()
+            feed_id = @@db.execute("SELECT id FROM feeds WHERE url = ? AND name = ?", feed.url, feed.name)[0]['id']
             @@db.execute("INSERT INTO users_feeds(user, feed, name)  VALUES(?, ?, ?);", feed.user, feed_id, feed.name)
             return feed_id
         rescue => error
@@ -437,6 +437,15 @@ class Database
             return @@db.execute("SELECT role, mail FROM users")
          rescue => error
             warn "getUsers: #{error}"
+        end
+    end
+
+    # Remove link between user and feed
+    def unsubscribeUser(feed)
+        begin
+            return @@db.execute("DELETE FROM users_feeds WHERE feed = ? AND user = ?", feed.id, feed.user)
+         rescue => error
+            warn "unsubscribeUser: #{error}"
         end
     end
 end
