@@ -159,9 +159,9 @@ class Database
         end
     end
 
-    def addFeed(feed, user:)
+    def addFeed(feed)
         begin
-            @@db.execute("INSERT INTO feeds(url, name)  VALUES(?, ?);", feed.url, feed.name)
+            @@db.execute("INSERT OR IGNORE INTO feeds(url, name)  VALUES(?, ?);", feed.url, feed.name)
             feed_id = @@db.last_insert_row_id()
             @@db.execute("INSERT INTO users_feeds(user, feed, name)  VALUES(?, ?, ?);", feed.user, feed_id, feed.name)
             return feed_id
@@ -312,7 +312,7 @@ class Database
                     feeds.push(Feed.new(url: row["url"], name: row["name"], id: row["id"], user: user))
                 end
             else
-                @@db.execute("SELECT url, id, name FROM feeds JOIN users_feeds ON (users_feeds.feed = feeds.id) WHERE users_feeds.user = ?;", user) do |row|
+                @@db.execute("SELECT url, id, feeds.name FROM feeds JOIN users_feeds ON (users_feeds.feed = feeds.id) WHERE users_feeds.user = ?;", user) do |row|
                     feeds.push(Feed.new(url: row["url"], name: row["name"], id: row["id"], user: user))
                 end
             end

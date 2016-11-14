@@ -17,7 +17,8 @@ include ERB::Util
 use Rack::Session::Pool, :expire_after => 2628000
 set :static_cache_control, [:public, max_age: 31536000]
 register Sinatra::Hijacker
-use Rack::Protection, except: :path_traversal
+# disable path_traversal for greader api, remote token for persona behind nginx proxy
+use Rack::Protection, except: [:path_traversal, :remote_token]
 
 websockets = []
 
@@ -193,6 +194,16 @@ def subscribe(url:, name:, user:)
         Rack::Superfeedr.subscribe(feed.url, feed.id, {retrieve: true, format: 'json'}) do |body, success, response|
             if success
                 feed.subscribed!
+                begin
+                    oldEntries = ::JSON.parse(body)
+                    oldEntries['items'].each do |item|
+                        content = item["content"] || item["summary"]
+                        content = item["content"].length > item["summary"].length ? item["content"] : item["summary"]  if item["content"] && item["summary"]
+                        Entry.new(url: item["permalinkUrl"], title: item["title"], content: content, feed_id: feed.id, user: nil).save!
+                    end
+                rescue => e
+                    warn "could not parse old entries after subscribing: #{e}"
+                end
                 return feed
             else
                 warn "error subscribing"
