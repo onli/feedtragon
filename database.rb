@@ -286,7 +286,7 @@ class Database
 
     def marked?(entry)
         begin
-            return @@db.execute("SELECT id FROM markers WHERE entry = ? AND user = ?", entry.id.to_i, user)[0] != nil
+            return @@db.execute("SELECT id FROM markers WHERE entry = ? AND user = ?", entry.id.to_i, entry.user)[0] != nil
         rescue => error
             warn "marked?: #{error}"
         end
