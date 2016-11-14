@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 gem 'sinatra'
-gem 'sinatra-browserid', :git => 'https://github.com/onli/sinatra-browserid'
+gem 'sinatra-portier'
 gem 'sinatra-contrib'
 gem 'sqlite3'
 gem 'puma'
