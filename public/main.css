@@ -46,7 +46,7 @@ button {
 }
 
 textarea {
-    /* textarea-borders else might differ from input-boxes in chrome */
+    /* textarea-borders otherwise might differ from input-boxes in chrome */
     -moz-appearance: textfield;
     -webkit-appearance: textfield;
 }
@@ -57,7 +57,7 @@ textarea {
     max-width: 40em;
     margin: auto;
     padding-left: 20%;
-    text-align: center;
+    text-align: left;
     position: absolute;
     top: 50%;
     left: 50%;

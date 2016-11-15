@@ -106,10 +106,6 @@ configure do
     set :protection, :except => [:path_traversal]
 end
 
-before do
-    settings.browserid_login_button = url("/browserid.png")
-end
-
 use Rack::Superfeedr do |superfeedr|
     superfeedr.on_notification do |feed_id, body, url, request|
         feed_id = feed_id.to_i
