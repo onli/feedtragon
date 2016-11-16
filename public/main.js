@@ -115,7 +115,7 @@
             loading_more: false,
             check_block: false,
             getUpdates: function() {
-                var socket = new WebSocket('ws://' + location.host + '/updated' );
+                var socket = new WebSocket('wss://' + location.host + '/updated' );
                 
                 socket.onopen = function() {
                     socket.send(JSON.stringify({feedid: n.Feed.current_feed }));
