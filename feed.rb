@@ -5,11 +5,13 @@ class Feed
     attr_accessor :url
     attr_accessor :name
     attr_accessor :user
+    attr_accessor :category
 
-    def initialize(url: nil, id: nil, name: nil, user:)
+    def initialize(url: nil, id: nil, name: nil, category: nil, user:)
         self.user = user
         self.url = url
         self.id = id
+        self.category = category
         name = url if name.nil?
         self.name = name
         if id && ! url
@@ -25,15 +27,17 @@ class Feed
     end
 
     def initializeById(id:)
-        data = Database.new.getFeedData(id: id)
+        data = Database.new.getFeedData(id: id, user: self.user)
         self.url = data["url"]
         self.name = data["name"]
+        self.category = data["category"]
     end
 
     def initializeByUrl(url:)
-        data = Database.new.getFeedData(url: url)
+        data = Database.new.getFeedData(url: url, user: self.user)
         self.id = data["id"]
         self.name = data["name"]
+        self.category = data["category"]
     end
 
     def save!

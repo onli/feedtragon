@@ -52,6 +52,7 @@ class Database
                                 user TEXT,
                                 feed INTEGER,
                                 name TEXT,
+                                category TEXT,
                                 FOREIGN KEY (user) REFERENCES users(mail) ON DELETE CASCADE,
                                 FOREIGN KEY (feed) REFERENCES feeds(id) ON DELETE CASCADE,
                                 UNIQUE(user, feed)
@@ -156,6 +157,19 @@ class Database
                     abort("aborting")
                 end
             end
+
+             begin
+                # upgrade task 1.0: multiuser tables needs to be added
+                @@db.execute "SELECT category FROM users_feeds"
+            rescue
+                begin
+                    puts "users_feeds need to add a category column, doing that now"
+                    @@db.execute "ALTER TABLE users_feeds ADD category TEXT"
+                rescue => error
+                    warn "database ugprade failed: #{error}"
+                    abort("aborting")
+                end
+            end
         end
     end
 
@@ -170,10 +184,16 @@ class Database
         end
     end
     
-    def getFeedData(id: nil, url: nil) 
+    def getFeedData(id: nil, url: nil, user:) 
         begin
-            return @@db.execute("SELECT url, name FROM feeds WHERE id = ?;", id.to_i)[0] if id
-            return @@db.execute("SELECT id, name FROM feeds WHERE url = ?;", url)[0] if url
+            if id
+                data = @@db.execute("SELECT url, name FROM feeds WHERE id = ?;", id.to_i)[0]
+                return data.merge(@@db.execute("SELECT category FROM users_feeds WHERE feed = ? AND user = ?;", id.to_i, user)[0]) if user
+            end
+            if url
+                data = @@db.execute("SELECT id, name FROM feeds WHERE url = ?;", url)[0]
+                return data.merge(@@db.execute("SELECT category FROM users_feeds WHERE feed = ? AND user = ?;", data['id'], user)[0]) if user
+            end
         rescue => error
             warn "getFeedData: #{error}"
         end
@@ -308,12 +328,12 @@ class Database
         begin
             feeds = []
             if onlyUnread
-                @@db.execute("SELECT DISTINCT feeds.url, feeds.id, feeds.name FROM feeds JOIN users_feeds ON (users_feeds.feed = feeds.id) JOIN entries ON (entries.feed = feeds.id) LEFT OUTER JOIN users_entries ON (users_entries.entry = entries.id) WHERE  (users_entries.read = 0 OR users_entries.read IS NULL) AND users_feeds.user = ?;", user) do |row|
-                    feeds.push(Feed.new(url: row["url"], name: row["name"], id: row["id"], user: user))
+                @@db.execute("SELECT DISTINCT feeds.url, feeds.id, feeds.name, category FROM feeds JOIN users_feeds ON (users_feeds.feed = feeds.id) JOIN entries ON (entries.feed = feeds.id) LEFT OUTER JOIN users_entries ON (users_entries.entry = entries.id) WHERE  (users_entries.read = 0 OR users_entries.read IS NULL) AND users_feeds.user = ?;", user) do |row|
+                    feeds.push(Feed.new(url: row["url"], name: row["name"], id: row["id"], category: row["category"], user: user))
                 end
             else
-                @@db.execute("SELECT url, id, feeds.name FROM feeds JOIN users_feeds ON (users_feeds.feed = feeds.id) WHERE users_feeds.user = ?;", user) do |row|
-                    feeds.push(Feed.new(url: row["url"], name: row["name"], id: row["id"], user: user))
+                @@db.execute("SELECT url, id, feeds.name, categoryFROM feeds JOIN users_feeds ON (users_feeds.feed = feeds.id) WHERE users_feeds.user = ?;", user) do |row|
+                    feeds.push(Feed.new(url: row["url"], name: row["name"], id: row["id"], category: row["category"], user: user))
                 end
             end
             return feeds
