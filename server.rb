@@ -172,9 +172,17 @@ post '/import' do
     Rack::Superfeedr.base_path = url("/superfeedr/feed/", false)
     opml = params[:file][:tempfile].read
     doc = Nokogiri::XML(opml)
-    doc.xpath("/opml/body/outline").map do |outline|
+    doc.xpath("/opml/body/outline").map do |first_level_outline|
         begin
-            subscribe(url: outline.attr("xmlUrl"), name: outline.attr("title"), user: authorized_email)
+            if first_level_outline.attr("xmlUrl")
+                # a feed
+                subscribe(url: first_level_outline.attr("xmlUrl"), name: first_level_outline.attr("title"), user: authorized_email)
+            else
+                # it is a category
+                first_level_outline.xpath("//outline").map do |outline|
+                    subscribe(url: outline.attr("xmlUrl"), name: outline.attr("title"), user: authorized_email, category: first_level_outline.attr("text")) if outline.attr("xmlUrl") # because the xpath also selects the first_level_group itself
+                end
+            end
         rescue Net::ReadTimeout
             warn "could not subscribe to #{outline.attr("xmlUrl")}"
         end
@@ -188,9 +196,9 @@ get '/feeds.opml' do
     erb :export, :layout => false, :locals => {:feeds => Database.new.getFeeds(onlyUnread: false, user: authorized_email) }
 end
 
-def subscribe(url:, name:, user:)
+def subscribe(url:, name:, user:, category: nil)
     protected!
-    feed = Feed.new(url: url, name: name, user: user).save!
+    feed = Feed.new(url: url, name: name, user: user, category: category).save!
     if ! feed.subscribed?
         Rack::Superfeedr.subscribe(feed.url, feed.id, {retrieve: true, format: 'json'}) do |body, success, response|
             if success

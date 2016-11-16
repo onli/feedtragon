@@ -177,7 +177,7 @@ class Database
         begin
             @@db.execute("INSERT OR IGNORE INTO feeds(url, name)  VALUES(?, ?);", feed.url, feed.name)
             feed_id = @@db.execute("SELECT id FROM feeds WHERE url = ? AND name = ?", feed.url, feed.name)[0]['id']
-            @@db.execute("INSERT INTO users_feeds(user, feed, name)  VALUES(?, ?, ?);", feed.user, feed_id, feed.name)
+            @@db.execute("INSERT INTO users_feeds(user, feed, name, category)  VALUES(?, ?, ?, ?);", feed.user, feed_id, feed.name, feed.category)
             return feed_id
         rescue => error
             warn "addFeed: #{error}"
@@ -332,7 +332,7 @@ class Database
                     feeds.push(Feed.new(url: row["url"], name: row["name"], id: row["id"], category: row["category"], user: user))
                 end
             else
-                @@db.execute("SELECT url, id, feeds.name, categoryFROM feeds JOIN users_feeds ON (users_feeds.feed = feeds.id) WHERE users_feeds.user = ?;", user) do |row|
+                @@db.execute("SELECT url, id, feeds.name, category FROM feeds JOIN users_feeds ON (users_feeds.feed = feeds.id) WHERE users_feeds.user = ?;", user) do |row|
                     feeds.push(Feed.new(url: row["url"], name: row["name"], id: row["id"], category: row["category"], user: user))
                 end
             end
