@@ -89,6 +89,7 @@ def loadConfiguration()
     Rack::Superfeedr.host = db.getOption("host")
     Rack::Superfeedr.login = db.getOption("superfeedrName")
     Rack::Superfeedr.password = db.getOption("superfeedrPassword")
+    Rack::Superfeedr.scheme = "https"
 end
 
 def gen_secret_url()
@@ -176,11 +177,11 @@ post '/import' do
         begin
             if first_level_outline.attr("xmlUrl")
                 # a feed
-                subscribe(url: first_level_outline.attr("xmlUrl"), name: first_level_outline.attr("title"), user: authorized_email)
+                subscribe(url: first_level_outline.attr("xmlUrl"), name: first_level_outline.attr("text"), user: authorized_email)
             else
                 # it is a category
                 first_level_outline.xpath("//outline").map do |outline|
-                    subscribe(url: outline.attr("xmlUrl"), name: outline.attr("title"), user: authorized_email, category: first_level_outline.attr("text")) if outline.attr("xmlUrl") # because the xpath also selects the first_level_group itself
+                    subscribe(url: outline.attr("xmlUrl"), name: outline.attr("text"), user: authorized_email, category: first_level_outline.attr("text")) if outline.attr("xmlUrl") # because the xpath also selects the first_level_group itself
                 end
             end
         rescue Net::ReadTimeout
