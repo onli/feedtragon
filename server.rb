@@ -278,7 +278,7 @@ get %r{/(.*)/entries} do |feed_id|
 end
 
 post '/addSuperfeedr' do
-    protected!
+    adminProtected!
     db = Database.new
     db.setOption("host",  params["host"] || request.host)
     db.setOption("superfeedrName", params["name"])
