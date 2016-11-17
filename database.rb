@@ -188,11 +188,13 @@ class Database
         begin
             if id
                 data = @@db.execute("SELECT url, name FROM feeds WHERE id = ?;", id.to_i)[0]
-                return data.merge(@@db.execute("SELECT category FROM users_feeds WHERE feed = ? AND user = ?;", id.to_i, user)[0]) if user
+                data = data.merge(@@db.execute("SELECT category FROM users_feeds WHERE feed = ? AND user = ?;", id.to_i, user)[0]) if user
+                return data
             end
             if url
                 data = @@db.execute("SELECT id, name FROM feeds WHERE url = ?;", url)[0]
-                return data.merge(@@db.execute("SELECT category FROM users_feeds WHERE feed = ? AND user = ?;", data['id'], user)[0]) if user
+                data = data.merge(@@db.execute("SELECT category FROM users_feeds WHERE feed = ? AND user = ?;", data['id'], user)[0]) if user
+                return data
             end
         rescue => error
             warn "getFeedData: #{error}"
