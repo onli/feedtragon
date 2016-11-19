@@ -13,6 +13,7 @@ require 'sinatra/browserid'
 require 'sinatra/hijacker'
 require 'nokogiri'
 require 'tilt/erb'
+require 'thread/pool'
 include ERB::Util
 use Rack::Session::Pool, :expire_after => 2628000
 set :static_cache_control, [:public, max_age: 31536000]
@@ -21,6 +22,7 @@ register Sinatra::Hijacker
 use Rack::Protection, except: [:path_traversal, :remote_token]
 
 websockets = []
+pool = Thread.pool(3)
 
 helpers do
     include Rack::Utils
@@ -173,22 +175,32 @@ post '/import' do
     Rack::Superfeedr.base_path = url("/superfeedr/feed/", false)
     opml = params[:file][:tempfile].read
     doc = Nokogiri::XML(opml)
-    doc.xpath("/opml/body/outline").map do |first_level_outline|
-        begin
-            if first_level_outline.attr("xmlUrl")
-                # a feed
-                subscribe(url: first_level_outline.attr("xmlUrl"), name: first_level_outline.attr("text"), user: authorized_email)
-            else
-                # it is a category
-                first_level_outline.xpath("//outline").map do |outline|
-                    subscribe(url: outline.attr("xmlUrl"), name: outline.attr("text"), user: authorized_email, category: first_level_outline.attr("text")) if outline.attr("xmlUrl") # because the xpath also selects the first_level_group itself
+    pool.process {
+        doc.xpath("/opml/body/outline").map do |first_level_outline|
+            begin
+                if first_level_outline.attr("xmlUrl")
+                    # a feed
+                    subscribe(url: first_level_outline.attr("xmlUrl"), name: first_level_outline.attr("text"), user: authorized_email)
+                    sleep(10)
+                else
+                    # it is a category
+                    first_level_outline.xpath("//outline").map do |outline|
+                        if outline.attr("xmlUrl") # because the xpath also selects the first_level_group itself
+                            begin
+                                subscribe(url: outline.attr("xmlUrl"), name: outline.attr("text"), user: authorized_email, category: first_level_outline.attr("text")) 
+                                sleep(10)
+                            rescue Net::ReadTimeout
+                                warn "could not subscribe to #{outline.attr("xmlUrl")}"
+                            end
+                        end
+                    end
                 end
+            rescue Net::ReadTimeout
+                warn "could not subscribe to #{outline.attr("xmlUrl")}"
             end
-        rescue Net::ReadTimeout
-            warn "could not subscribe to #{outline.attr("xmlUrl")}"
         end
-    end
-    redirect url '/'
+    }
+    redirect url '/#msgImport'
 end
 
 get '/feeds.opml' do

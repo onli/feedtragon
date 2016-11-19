@@ -392,6 +392,33 @@ textarea {
     color: #f22f49 !important;
 }
 
+@keyframes fadein {
+   0% {opacity:0;}
+   100% {opacity:0.9;}
+}
+
+.message {
+    opacity: 0;
+    position: absolute;
+    display: inline-block;
+    top: 1em;
+    left: 20%;
+    right: 0;
+    padding: 0.3em;
+    max-width: 20em;
+    background: #1288BF;
+    border: 1px solid #1879A5;
+    color: white;
+    border-radius: 3px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.message:target {
+    animation: fadein 1s;
+    opacity: 0.9;
+}
+
 /*! @license
 * Copyright 2012-2014 Alex Wolfe and Rob Levin
 *
