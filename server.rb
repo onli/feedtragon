@@ -168,21 +168,23 @@ end
 post '/unsubscribe' do
     protected!
     Rack::Superfeedr.base_path = url("/superfeedr/feed/", false)
-    begin
-        params["feeds"].each do |id, _|
-            feed = Feed.new(id: id, user: authorized_email)
-            feed.unsubscribeUser!
-            if (feed.subscribers == 0) 
-                Rack::Superfeedr.unsubscribe(feed.url, id) do |n|
-                    puts "unsubscribed feed!"
-                    Feed.new(id: feed.id, user: nil).unsubscribe!
+    FlowControl::pool.process {
+        begin
+            params["feeds"].each do |id, _|
+                feed = Feed.new(id: id, user: authorized_email)
+                feed.unsubscribeUser!
+                if (feed.subscribers == 0) 
+                    Rack::Superfeedr.unsubscribe(feed.url, id) do |n|
+                        puts "unsubscribed feed!"
+                        Feed.new(id: feed.id, user: nil).unsubscribe!
+                    end
                 end
             end
+        rescue => error
+            warn "unsubscribe: #{error}"
         end
-    rescue => error
-        warn "unsubscribe: #{error}"
-    end
-    redirect url '/settings'
+    }
+    redirect url '/#msgUnsubscribe'
 end
 
 post '/import' do
