@@ -139,8 +139,13 @@ use Rack::Superfeedr do |superfeedr|
                 websockets[feed_id].each {|feedsocket| feedsocket.send_data({:new_entry => entry.id}.to_json) if feedsocket} if websockets[feed_id]
             end
         else
-            if notification["status"]["code"] != 0 && (Time.now - Time.at(notification["status"]["lastParse"])) > 604800
-                # this was not a ping && for more than a week superfeedr was unable to parse this, so we need to unsubscribe to reduce load
+            if notification["status"]["code"] != 0 &&
+                (Time.now - Time.at(notification["status"]["lastParse"])) > (60 * 60 * 24 * 20) &&
+                (Time.now - Time.at(feed.lastUpdated)) > (60 * 60 * 24 * 20)
+                # this was not just a ping, which signals the feed is broken for superfeedr
+                # and for more than 20 days superfeedr was unable to parse this
+                # and our last internal update is older than 20 days
+                # then we unsubscribe, to reduce load
                 puts "unsubscribing #{feed_id}"
                 Rack::Superfeedr.unsubscribe url, feed_id do |n|
                     puts "unsubscribed feed"

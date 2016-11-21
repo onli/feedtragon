@@ -65,8 +65,9 @@ class Feed
         Database.new.unsubscribeUser(self)
     end
 
-    def entries(startId: 0)
-        Database.new.getEntries(self, startId, user: user)
+    # Get 10 last entries from the feed, oldest first
+    def entries(startId: 0, limit: 10)
+        Database.new.getEntries(self, startId, user: user, limit: limit)
     end
 
     def setName(name:)
@@ -76,5 +77,13 @@ class Feed
     # how many users subscribe to this feed
     def subscribers
         Database.new.getSubscribers(self)
+    end
+
+    def lastUpdated
+        begin
+            self.entries(limit: 500000).last.date
+        rescue
+            return 0
+        end
     end
 end
