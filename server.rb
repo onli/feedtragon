@@ -162,6 +162,11 @@ require './greader.rb'
 
 ## feedtragon web ##
 
+post '/logout' do
+    logout!
+    redirect '/'
+end
+
 post '/subscribe' do
     protected!
     # the superfeedr middleware needs to be set if we are not running on /, and it needs to be relative

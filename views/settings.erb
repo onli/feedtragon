@@ -8,7 +8,7 @@
         </nav>
     <% end %>
     <%= erb :addForm %>
-    <section id="exportForm">
+    <section id="exportForm" class="settingsForm">
         <h2>Export</h2>
         <form action="<%= url '/feeds.opml' %>" method="GET">
             <button type="submit">Export</button>
@@ -16,4 +16,11 @@
     </section>
     <%= erb :unsubscribeForm, :locals => {:feeds => allFeeds} %>
     <%= erb :clientForm %>
+    
+    <section id="logoutForm" class="settingsForm">
+        <h2>Logout</h2>
+        <form id="subscribe" method="POST" action="<%= url '/logout' %>">
+            <button type="submit">Logout</button>
+        </form>
+    </section>
 </main>

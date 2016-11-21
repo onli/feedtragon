@@ -235,12 +235,7 @@ textarea {
     display: block;
 }
 
-#unsubscribeForm,
-#addForms,
-#exportForm,
-#superfeedrForm,
-#clientForm,
-#userForm  {
+.settingsForm  {
     padding-top: 2em;
     padding-left: 2em;
 }
