@@ -14,6 +14,7 @@ require 'sinatra/hijacker'
 require 'nokogiri'
 require 'tilt/erb'
 require 'thread/pool'
+require 'throttle-queue'
 include ERB::Util
 use Rack::Session::Pool, :expire_after => 2628000
 set :static_cache_control, [:public, max_age: 31536000]
@@ -22,7 +23,20 @@ register Sinatra::Hijacker
 use Rack::Protection, except: [:path_traversal, :remote_token]
 
 websockets = []
-pool = Thread.pool(3)
+class FlowControl
+    def self.init
+        @@pool = Thread.pool(3)
+        @@throttle = ThrottleQueue.new 1
+    end
+
+    def self.pool
+        return @@pool
+    end
+
+    def self.throttle
+        return @@throttle
+    end
+end
 
 helpers do
     include Rack::Utils
@@ -107,6 +121,7 @@ end
 configure do
     loadConfiguration()
     set :protection, :except => [:path_traversal]
+    FlowControl::init
 end
 
 use Rack::Superfeedr do |superfeedr|
@@ -175,20 +190,18 @@ post '/import' do
     Rack::Superfeedr.base_path = url("/superfeedr/feed/", false)
     opml = params[:file][:tempfile].read
     doc = Nokogiri::XML(opml)
-    pool.process {
+    FlowControl::pool.process {
         doc.xpath("/opml/body/outline").map do |first_level_outline|
             begin
                 if first_level_outline.attr("xmlUrl")
                     # a feed
                     subscribe(url: first_level_outline.attr("xmlUrl"), name: first_level_outline.attr("text"), user: authorized_email)
-                    sleep(10)
                 else
                     # it is a category
                     first_level_outline.xpath("//outline").map do |outline|
                         if outline.attr("xmlUrl") # because the xpath also selects the first_level_group itself
                             begin
                                 subscribe(url: outline.attr("xmlUrl"), name: outline.attr("text"), user: authorized_email, category: first_level_outline.attr("text")) 
-                                sleep(10)
                             rescue Net::ReadTimeout
                                 warn "could not subscribe to #{outline.attr("xmlUrl")}"
                             end
@@ -199,6 +212,7 @@ post '/import' do
                 warn "could not subscribe to #{outline.attr("xmlUrl")}"
             end
         end
+        FlowControl::throttle.wait
     }
     redirect url '/#msgImport'
 end
@@ -213,26 +227,28 @@ def subscribe(url:, name:, user:, category: nil)
     protected!
     feed = Feed.new(url: url, name: name, user: user, category: category).save!
     if ! feed.subscribed?
-        Rack::Superfeedr.subscribe(feed.url, feed.id, {retrieve: true, format: 'json'}) do |body, success, response|
-            if success
-                feed.subscribed!
-                begin
-                    oldEntries = ::JSON.parse(body)
-                    oldEntries['items'].each do |item|
-                        content = item["content"] || item["summary"]
-                        content = item["content"].length > item["summary"].length ? item["content"] : item["summary"]  if item["content"] && item["summary"]
-                        Entry.new(url: item["permalinkUrl"], title: item["title"], content: content, feed_id: feed.id, user: nil).save!
+        FlowControl::throttle.background(url) {
+            Rack::Superfeedr.subscribe(feed.url, feed.id, {retrieve: true, format: 'json'}) do |body, success, response|
+                if success
+                    feed.subscribed!
+                    begin
+                        oldEntries = ::JSON.parse(body)
+                        oldEntries['items'].each do |item|
+                            content = item["content"] || item["summary"]
+                            content = item["content"].length > item["summary"].length ? item["content"] : item["summary"]  if item["content"] && item["summary"]
+                            Entry.new(url: item["permalinkUrl"], title: item["title"], content: content, feed_id: feed.id, user: nil).save!
+                        end
+                    rescue => e
+                        warn "could not parse old entries after subscribing: #{e}"
                     end
-                rescue => e
-                    warn "could not parse old entries after subscribing: #{e}"
+                    return feed
+                else
+                    warn "error subscribing"
+                    warn response
+                    warn body
                 end
-                return feed
-            else
-                warn "error subscribing"
-                warn response
-                warn body
             end
-        end
+        }
     end
 end
 
