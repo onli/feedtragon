@@ -16,7 +16,6 @@ require 'tilt/erb'
 require 'thread/pool'
 require 'throttle-queue'
 include ERB::Util
-use Rack::Session::Pool, :expire_after => 2628000
 set :static_cache_control, [:public, max_age: 31536000]
 register Sinatra::Hijacker
 # disable path_traversal for greader api, remote token for persona behind nginx proxy

@@ -10,3 +10,7 @@ gem 'sinatra-hijacker'
 gem 'argon2'
 gem 'thread'
 gem 'throttle-queue'
+# If you disable persistent session store in the config.ru, those gems are no longer needed
+gem 'moneta'
+gem 'dm-sqlite-adapter'
+gem 'data_mapper'
