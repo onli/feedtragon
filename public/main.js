@@ -150,16 +150,27 @@
                 }
             },
             gotoNext: function() {
-                if (n.Feed.current_feed != 0) {                    
-                    window.location = document.querySelector('#feed_' + n.Feed.current_feed + ' + li a').href;
+                if (n.Feed.current_feed != 0) {
+                    var allFeeds = document.querySelectorAll('.feedlink')
+                    var currentElement = document.querySelector('#feed_' + n.Feed.current_feed);
+                    for (var i = 0; i < allFeeds.length; i++) {
+                        if (allFeeds[i] == currentElement) {
+                            window.location = allFeeds[i+1].firstChild.href;
+                        }
+                    }
                 } else {
                     window.location = document.querySelector('.feedlink a').href;
                 }
             },
             gotoPrev: function() {
                 if (n.Feed.current_feed != 0) {
-                    // the doubled previousChild is necessary because it also returns textnodes, there seems to be no alternative
-                    window.location = document.querySelector('#feed_' + n.Feed.current_feed).previousSibling.previousSibling.firstChild.href;
+                    var allFeeds = document.querySelectorAll('.feedlink')
+                    var currentElement = document.querySelector('#feed_' + n.Feed.current_feed);
+                    for (var i = 0; i < allFeeds.length; i++) {
+                        if (allFeeds[i] == currentElement) {
+                            window.location = allFeeds[i-1].firstChild.href;
+                        }
+                    }
                 } else {
                     window.location = document.querySelector('.feedlink:last-child a').href;
                 }

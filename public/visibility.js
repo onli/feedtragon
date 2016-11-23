@@ -6,7 +6,6 @@ Element.prototype.isVisible = function() {
         if (element.offsetWidth === 0 || element.offsetHeight === 0) {
             return false;
         }
-        console.log(element);
         var height = document.documentElement.clientHeight,
             rects = element.getClientRects(),
             on_top = function(r) {

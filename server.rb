@@ -371,24 +371,25 @@ end
 
 get %r{/([0-9]+)} do |id|
     protected!
-    erb :entrylist, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true, user: authorized_email), :entries => Feed.new(id: id, user: authorized_email).entries(startId: params[:startId]), :current_feed_id => id}
+    currentFeed = Feed.new(id: id, user: authorized_email)
+    erb :entrylist, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true, user: authorized_email), :entries => currentFeed.entries(startId: params[:startId]), :current_feed_id => id, :current_category => currentFeed.category}
 end
 
 get '/settings' do
     protected!
-    erb :settings, :locals => {:feeds => Database.new.getFeeds(user: authorized_email), :entries => nil, :current_feed_id => nil, :allFeeds => Database.new.getFeeds(onlyUnread: false, user: authorized_email)}
+    erb :settings, :locals => {:feeds => Database.new.getFeeds(user: authorized_email), :entries => nil, :current_feed_id => nil, :allFeeds => Database.new.getFeeds(onlyUnread: false, user: authorized_email), :current_category => nil}
 end
 
 get '/admin' do
     adminProtected!
     db = Database.new
-    erb :admin, :locals => {:feeds => db.getFeeds(user: authorized_email), :entries => nil, :current_feed_id => nil, :users => db.getUsers}
+    erb :admin, :locals => {:feeds => db.getFeeds(user: authorized_email), :entries => nil, :current_feed_id => nil, :users => db.getUsers, :current_category => nil}
 end
 
 
 get '/marked' do
     protected!
-    erb :entrylist, :locals => {:feeds => Database.new.getFeeds(user: authorized_email), :entries => Database.new.getMarkedEntries(params[:startId], user: authorized_email), :current_feed_id => 'marked'}
+    erb :entrylist, :locals => {:feeds => Database.new.getFeeds(user: authorized_email), :entries => Database.new.getMarkedEntries(params[:startId], user: authorized_email), :current_feed_id => 'marked', :current_category => nil}
 end
 
 get '/' do
@@ -397,6 +398,6 @@ get '/' do
         erb :installer, :layout => false
     else
         protected!
-        erb :index, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true, user: authorized_email), :current_feed_id => nil}
+        erb :index, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true, user: authorized_email), :current_feed_id => nil, :current_category => nil}
     end
 end

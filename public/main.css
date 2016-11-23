@@ -51,6 +51,10 @@ textarea {
     -webkit-appearance: textfield;
 }
 
+summary {
+    cursor: pointer;
+}
+
 /* specifics */
 
 #login, #index {
@@ -108,12 +112,12 @@ textarea {
     display: none;
 }
 
-#feedList a {
+#feedList a, #feedList summary{
     color: #333;
     outline: none;
 }
 
-#feedList a:focus {
+#feedList a:focus, #feedList summary:focus {
     color: #f22f49 !important;
 }
 
@@ -125,13 +129,13 @@ textarea {
     border-bottom: 1px solid #E5E5E5;
 }
 
-#feedList a {
+#feedList a, #feedList summary {
     padding-top: 0.3em;
     padding-bottom: 0.3em;
     display: block;
 }
 
-#feedList li.current {
+#feedList .feedlink.current {
     background-color: #E5E5E5;
 }
 
