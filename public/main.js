@@ -216,6 +216,28 @@
                     }
                 }
             }
+        },
+        Feedlist: {
+            // activate the inline rename input
+            rename: function(feedlink) {
+                feedlink.setAttribute('contentEditable', true);
+                var name = feedlink.textContent;
+                feedlink.addEventListener('keyup', function(evt) {
+                    if (evt.keyCode == 13) { // Enter
+                        feedlink.setAttribute('contentEditable', false);
+                        var http = new XMLHttpRequest();
+                        var params = "feed=" + feedlink.parentNode.id.replace('feed_', '') + "&name=" + encodeURIComponent(feedlink.textContent);
+                        http.open('POST', '/rename', true);
+                        http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                        http.send(params);
+                    }
+                    if (evt.keyCode == 27) { // Escape
+                        feedlink.textContent = name;
+                        feedlink.setAttribute('contentEditable', false);
+                    }
+                });
+                feedlink.focus();
+            }
         }
     }
     
@@ -239,7 +261,6 @@
     function addSelectAllButton() {
         var tagString = "<button type='button' id='toggleUnsubscribe'>all</button>";
         var range = document.createRange();
-        //range.selectNode(document.querySelector("#unsubscribeList"));
         var documentFragment = range.createContextualFragment(tagString);
         var unsubscribeForm = document.querySelector("#unsubscribeForm form")
         unsubscribeForm.insertBefore(documentFragment, unsubscribeForm.firstChild);
@@ -261,7 +282,6 @@
     function addUserInputButton() {
         var tagString = "<button type='button' id='addUserInput'>+</button>";
         var range = document.createRange();
-        //range.selectNode(document.querySelector("#unsubscribeList"));
         var documentFragment = range.createContextualFragment(tagString);
         var userForm = document.querySelector("#userForm ol")
         userForm.appendChild(documentFragment);
@@ -319,6 +339,12 @@
                 evt.stopPropagation();
             });
         }
+        document.querySelector('#feedList').addEventListener('click', function(evt) {
+            if (evt.target.classList.contains('feedcontrol')) {
+                evt.stopPropagation();
+                n.Feedlist.rename(evt.target.parentNode.firstChild);
+            }
+        });
     });
 
     if (document.readyState == 'complete' || document.readyState == 'loaded' || document.readyState == 'interactive') {

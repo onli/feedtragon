@@ -174,6 +174,11 @@ post '/subscribe' do
     redirect url '/'
 end
 
+post '/rename' do
+    protected!
+    feed = Feed.new(id: params[:feed], user: authorized_email).setName(name: URI.decode_www_form_component(params[:name]))
+end
+
 post '/unsubscribe' do
     protected!
     Rack::Superfeedr.base_path = url("/superfeedr/feed/", false)

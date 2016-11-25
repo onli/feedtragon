@@ -20,7 +20,7 @@
                 <% oldCategory = feed.category %>
                 <li class="category <%= "current" if current_category == feed.category %>"><details <%= "open" if current_category == feed.category %>><summary>⌦ <%= feed.category%></summary>
             <% end %>
-            <li class="feedlink<%= feed.id.to_i == current_feed_id.to_i ? ' current' : ''%>" id="feed_<%= feed.id %>"><a href="<%= url '/' + feed.id.to_s %>"><%= truncate(feed.name, 35, "...") %></a></li>
+            <li class="feedlink<%= feed.id.to_i == current_feed_id.to_i ? ' current' : ''%>" id="feed_<%= feed.id %>"><a href="<%= url '/' + feed.id.to_s %>"><%= truncate(feed.name, 35, "...") %></a><button class="feedcontrol">✎</button></li>
         <% end %>
         </ol>
         <a id="addLink" href="<%= url '/settings' %>">&#9881;</a>

@@ -45,6 +45,10 @@ button {
     padding-right: 0em !important;
 }
 
+button::-moz-focus-inner {
+    border: 0;
+}
+
 textarea {
     /* textarea-borders otherwise might differ from input-boxes in chrome */
     -moz-appearance: textfield;
@@ -93,7 +97,8 @@ summary {
     vertical-align: top;
     width: 20%;
     height: 100%;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: visible;
     box-shadow: 3px 3px 5px 0px #996E6E;
     position: fixed;
     border-left: 1px solid #f22f49;
@@ -132,11 +137,28 @@ summary {
 #feedList a, #feedList summary {
     padding-top: 0.3em;
     padding-bottom: 0.3em;
-    display: block;
+    display: inline-block;
+    width: 90%;
 }
 
 #feedList .feedlink.current {
     background-color: #E5E5E5;
+}
+
+.feedcontrol {
+    display: none;
+    width: 10%;
+    background: transparent;
+    border: 0;
+    outline: none;
+}
+
+.feedlink:hover .feedcontrol {
+    display: inline-block;
+}
+
+.feedcontrol:focus {
+    color: #f22f49 !important;
 }
 
 #entries {
@@ -224,7 +246,8 @@ summary {
 }
 
 #feeds li:hover,
-#feeds a:hover {
+#feeds a:hover,
+#feeds .feedlink.current:hover {
     background-color: white;
 }
 

@@ -330,11 +330,11 @@ class Database
         begin
             feeds = []
             if onlyUnread
-                @@db.execute("SELECT DISTINCT feeds.url, feeds.id, feeds.name, category FROM feeds JOIN users_feeds ON (users_feeds.feed = feeds.id) JOIN entries ON (entries.feed = feeds.id) LEFT OUTER JOIN users_entries ON (users_entries.entry = entries.id) WHERE  (users_entries.read = 0 OR users_entries.read IS NULL) AND users_feeds.user = ?;", user) do |row|
+                @@db.execute("SELECT DISTINCT feeds.url, feeds.id, users_feeds.name, category FROM feeds JOIN users_feeds ON (users_feeds.feed = feeds.id) JOIN entries ON (entries.feed = feeds.id) LEFT OUTER JOIN users_entries ON (users_entries.entry = entries.id) WHERE  (users_entries.read = 0 OR users_entries.read IS NULL) AND users_feeds.user = ?;", user) do |row|
                     feeds.push(Feed.new(url: row["url"], name: row["name"], id: row["id"], category: row["category"], user: user))
                 end
             else
-                @@db.execute("SELECT url, id, feeds.name, category FROM feeds JOIN users_feeds ON (users_feeds.feed = feeds.id) WHERE users_feeds.user = ?;", user) do |row|
+                @@db.execute("SELECT url, id, users_feeds.name, category FROM feeds JOIN users_feeds ON (users_feeds.feed = feeds.id) WHERE users_feeds.user = ?;", user) do |row|
                     feeds.push(Feed.new(url: row["url"], name: row["name"], id: row["id"], category: row["category"], user: user))
                 end
             end
@@ -417,7 +417,12 @@ class Database
 
     def setName(name, feed)
         begin
-            @@db.execute("UPDATE feeds SET name = ? WHERE id = ?;", name, feed.id.to_i)
+            if feed.user.nil?
+                @@db.execute("UPDATE feeds SET name = ? WHERE id = ?;", name, feed.id.to_i)
+            else
+                puts "#{name}, #{feed.id.to_i}, #{feed.user}"
+                @@db.execute("UPDATE users_feeds SET name = ? WHERE feed = ? AND user = ?;", name, feed.id.to_i, feed.user)
+            end
         rescue => error
             warn "setName: #{error}"
         end
