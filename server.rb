@@ -377,19 +377,19 @@ end
 
 get '/settings' do
     protected!
-    erb :settings, :locals => {:feeds => Database.new.getFeeds(user: authorized_email), :entries => nil, :current_feed_id => nil, :allFeeds => Database.new.getFeeds(onlyUnread: false, user: authorized_email), :current_category => nil}
+    erb :settings, :locals => {:feeds => Database.new.getFeeds(user: authorized_email), :entries => nil, :current_feed_id => nil, :allFeeds => Database.new.getFeeds(onlyUnread: false, user: authorized_email)}
 end
 
 get '/admin' do
     adminProtected!
     db = Database.new
-    erb :admin, :locals => {:feeds => db.getFeeds(user: authorized_email), :entries => nil, :current_feed_id => nil, :users => db.getUsers, :current_category => nil}
+    erb :admin, :locals => {:feeds => db.getFeeds(user: authorized_email), :entries => nil, :current_feed_id => nil, :users => db.getUsers}
 end
 
 
 get '/marked' do
     protected!
-    erb :entrylist, :locals => {:feeds => Database.new.getFeeds(user: authorized_email), :entries => Database.new.getMarkedEntries(params[:startId], user: authorized_email), :current_feed_id => 'marked', :current_category => nil}
+    erb :entrylist, :locals => {:feeds => Database.new.getFeeds(user: authorized_email), :entries => Database.new.getMarkedEntries(params[:startId], user: authorized_email), :current_feed_id => 'marked'}
 end
 
 get '/' do
@@ -398,6 +398,6 @@ get '/' do
         erb :installer, :layout => false
     else
         protected!
-        erb :index, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true, user: authorized_email), :current_feed_id => nil, :current_category => nil}
+        erb :index, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true, user: authorized_email), :current_feed_id => nil}
     end
 end
