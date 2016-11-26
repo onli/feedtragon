@@ -223,6 +223,7 @@
                 feedlink.setAttribute('contentEditable', true);
                 var name = feedlink.textContent;
                 feedlink.addEventListener('keyup', function(evt) {
+                    evt.stopPropagation();
                     if (evt.keyCode == 13) { // Enter
                         feedlink.setAttribute('contentEditable', false);
                         var http = new XMLHttpRequest();
