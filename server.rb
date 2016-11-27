@@ -179,6 +179,22 @@ post '/rename' do
     feed = Feed.new(id: params[:feed], user: authorized_email).setName(name: URI.decode_www_form_component(params[:name]))
 end
 
+post '/category' do
+    protected!
+    feed = Feed.new(id: params[:feed], user: authorized_email)
+    if params[:category] == "newCategory"
+        feed.setCategory(category: params[:newCategory])
+    else
+        feed.setCategory(category: params[:category])
+    end
+    redirect back
+end
+
+get '/categoryForm' do
+    protected!
+    erb :categoryForm, :layout => false, :locals => {:feed => Feed.new(id: params[:feed], user: authorized_email), :categories => Database.new.getCategories(user: authorized_email)}
+end
+
 post '/unsubscribe' do
     protected!
     Rack::Superfeedr.base_path = url("/superfeedr/feed/", false)

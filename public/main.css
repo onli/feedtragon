@@ -138,7 +138,7 @@ summary {
     padding-top: 0.3em;
     padding-bottom: 0.3em;
     display: inline-block;
-    width: 90%;
+    width: 80%;
 }
 
 #feedList .feedlink.current {
@@ -147,10 +147,15 @@ summary {
 
 .feedcontrol {
     display: none;
-    width: 10%;
+    max-width: 10%;
     background: transparent;
     border: 0;
     outline: none;
+    padding: 1px;
+}
+
+.categorize {
+    font-size: 0.9em;
 }
 
 .feedlink:hover .feedcontrol {
@@ -159,6 +164,50 @@ summary {
 
 .feedcontrol:focus {
     color: #f22f49 !important;
+}
+
+#overlay {
+    display: none;
+    position: absolute;
+    width: 80%;
+    background: rgba(0, 0, 0, 0.6);
+    height: 100%;
+    margin-left: 20%;
+    z-index: 1000;
+}
+
+#overlayMenu {
+    width: 90%;
+    height: 90%;
+    background: #F7F7F7;
+    margin: auto;
+    margin-top: 5%;
+    opacity: 1;
+    padding: 1em;
+}
+
+#closeOverlay {
+    float: right;
+}
+
+#categoryForm {
+    display: inline-block;
+    text-align: left;
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+#categoryForm ol {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+#categoryForm li {
+    position: relative;
+    right: 1.5em;
+    min-height: 1.5em;
 }
 
 #entries {
@@ -439,6 +488,30 @@ summary {
 .message:target {
     animation: fadein 1s;
     opacity: 0.9;
+}
+
+/* http://tobiasahlin.com/spinkit/ */
+.spinner {
+    width: 40px;
+    height: 40px;
+    background-color: #f22f49;
+
+    animation: sk-rotateplane 1.2s infinite ease-in-out;
+
+    position: relative;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+@keyframes sk-rotateplane {
+    0% { 
+    transform: perspective(120px) rotateX(0deg) rotateY(0deg);
+    } 50% { 
+    transform: perspective(120px) rotateX(-180.1deg) rotateY(0deg);
+    } 100% { 
+    transform: perspective(120px) rotateX(-180deg) rotateY(-179.9deg);
+    }
 }
 
 /*! @license

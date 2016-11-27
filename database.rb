@@ -420,12 +420,31 @@ class Database
             if feed.user.nil?
                 @@db.execute("UPDATE feeds SET name = ? WHERE id = ?;", name, feed.id.to_i)
             else
-                puts "#{name}, #{feed.id.to_i}, #{feed.user}"
                 @@db.execute("UPDATE users_feeds SET name = ? WHERE feed = ? AND user = ?;", name, feed.id.to_i, feed.user)
             end
         rescue => error
             warn "setName: #{error}"
         end
+    end
+    
+    def setCategory(category, feed)
+        begin
+            @@db.execute("UPDATE users_feeds SET category = ? WHERE feed = ? AND user = ?;", category, feed.id.to_i, feed.user)
+        rescue => error
+            warn "setCategory: #{error}"
+        end
+    end
+
+    def getCategories(user:)
+        categories = []
+        begin
+            @@db.execute("SELECT DISTINCT category FROM users_feeds WHERE user = ?", user) do |row|
+                categories.push(row["category"]) if row["category"]
+            end
+         rescue => error
+            warn "getCategories: #{error}"
+        end
+        return categories
     end
 
     def registered?(mail)

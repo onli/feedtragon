@@ -73,6 +73,10 @@ class Feed
     def setName(name:)
         Database.new.setName(name, self)
     end
+    
+    def setCategory(category:)
+        Database.new.setCategory(category, self)
+    end
 
     # how many users subscribe to this feed
     def subscribers

@@ -238,6 +238,40 @@
                     }
                 });
                 feedlink.focus();
+            },
+            // the category menu is the category form opened in the main section overlay
+            openCategoryMenu: function(control) {
+                var overlay = document.querySelector('#overlay');
+                var menu = document.querySelector('#overlayMenu');
+                var spinner = document.createElement('div')
+                spinner.className = 'spinner';
+                menu.appendChild(spinner); 
+                overlay.style.display = 'block';
+
+                var http = new XMLHttpRequest();
+                http.onreadystatechange = function() {
+                    if (http.readyState == 4 && http.status == 200) {
+                        menu.innerHTML = http.response;
+                        menu.addEventListener('click', function(evt) {
+                            switch (evt.target.id) {
+                                case 'closeOverlay':
+                                    n.Feedlist.closeMenu();
+                                    break;
+                                case 'newCategory':
+                                    evt.target.previousElementSibling.checked = true;
+                                    break;
+                                case 'activateNewCategory':
+                                    evt.target.nextElementSibling.focus();
+                                    break;
+                            }
+                        })
+                    }
+                }
+                http.open('GET', '/categoryForm?feed=' + control.parentNode.id.replace('feed_', ''), true);
+                http.send();
+            },
+            closeMenu: function() {
+                 document.querySelector('#overlay').style.display = 'none';
             }
         }
     }
@@ -320,6 +354,7 @@
                                         if (evt.which == 80) { n.Feed.gotoPrev(); } // p
                                         if (evt.which == 86) { n.Entry.openCurrent(); } // v
                                         if (evt.which == 77) { n.Entry.toggleRead(n.Entry.current_entry); } // m
+                                        if (evt.which == 27) { n.Feedlist.closeMenu(); } // ESC
                                     }
         ); 
         ajaxifyForm('.mark', function(http) { n.Entry.toggleMarkButton(http.response) });
@@ -341,9 +376,13 @@
             });
         }
         document.querySelector('#feedList').addEventListener('click', function(evt) {
-            if (evt.target.classList.contains('feedcontrol')) {
+            if (evt.target.classList.contains('rename')) {
                 evt.stopPropagation();
                 n.Feedlist.rename(evt.target.parentNode.firstChild);
+            }
+            if (evt.target.classList.contains('categorize')) {
+                evt.stopPropagation();
+                n.Feedlist.openCategoryMenu(evt.target);
             }
         });
     });

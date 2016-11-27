@@ -1,0 +1,13 @@
+<button id="closeOverlay" class="button">X</button>
+<form id="categoryForm" method="POST" action="<%= url '/category' %>">
+    <input type="hidden" name="feed" value="<%= feed.id %>" />
+    <h2><%= truncate(feed.name, 35, "...") %></h2>
+    <h3>Assign a Category</h3>
+    <ol>
+    <% categories.each do |category| %>
+        <li><label><input type="radio" name="category" value="<%= category %>"/><%= category %></label></li>
+    <% end %>
+    <li><label><input type="radio" name="category" value="newCategory" id="activateNewCategory"/><input type="text" size=12 id="newCategory" name="newCategory" placeholder="New category"/></label></li>
+    </ol>
+    <button type="submit" class="button button-rounded">OK</button>
+</form>

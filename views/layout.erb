@@ -5,7 +5,7 @@
     <body>
         <% current_category = nil if defined?(current_category).nil? %>
         <%= erb :feedlist, :locals => {:feeds => feeds, :current_feed_id => current_feed_id, :current_category => current_category } %>
-
+        <div id="overlay"><div id="overlayMenu"></div></div>
         <%= yield %>
     </body>
 </html>
