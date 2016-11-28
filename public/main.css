@@ -168,7 +168,7 @@ summary {
 
 #overlay {
     display: none;
-    position: absolute;
+    position: fixed;
     width: 80%;
     background: rgba(0, 0, 0, 0.6);
     height: 100%;
