@@ -14,10 +14,10 @@ class Feed
         self.category = category
         name = url if name.nil?
         self.name = name
-        if id && ! url
+        if id && url.nil?
             self.initializeById(id: id)
         end
-        if url && ! id
+        if url && id.nil?
             begin
                 self.initializeByUrl(url: url)
             rescue NoMethodError => nme
