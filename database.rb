@@ -193,7 +193,13 @@ class Database
             end
             if url
                 data = @@db.execute("SELECT id, name FROM feeds WHERE url = ?;", url)[0]
-                data = data.merge(@@db.execute("SELECT category FROM users_feeds WHERE feed = ? AND user = ?;", data['id'], user)[0]) if user
+                if user
+                    rows = @@db.execute("SELECT category FROM users_feeds WHERE feed = ? AND user = ?;", data['id'], user)
+                    # user being set does not always mean there is something here
+                    if rows.size > 0
+                        data = data.merge(rows[0])
+                    end
+                end
                 return data
             end
         rescue => error

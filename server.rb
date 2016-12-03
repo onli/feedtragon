@@ -298,7 +298,7 @@ def subscribe(url:, name:, user:, category: nil)
             Rack::Superfeedr.subscribe(feed.url, feed.id, {retrieve: true, format: 'json'}) do |body, success, response|
                 if success
                     feed.subscribed!
-                    Clogger::info "successfully subscribed #{url}"
+                    Clogger::info "successfully subscribed #{url} in feed #{feed.id.to_s}"
                     begin
                         oldEntries = ::JSON.parse(body)
                         oldEntries['items'].each do |item|
