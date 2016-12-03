@@ -23,6 +23,7 @@ use Rack::Protection, except: [:path_traversal, :remote_token]
 
 websockets = []
 class FlowControl
+    # FlowControl contains the global threadpool and throttle used to move jobs to the background, like importing feeds
     def self.init
         @@pool = Thread.pool(3)
         @@throttle = ThrottleQueue.new 1
@@ -36,6 +37,32 @@ class FlowControl
         return @@throttle
     end
 end
+
+class Clogger
+    # Clogger is a wrapper containing a logger. This is necessary to be able to use the same logfile for
+    # sinatra request logging and custom logging by calling sinatras logger
+    def self.init(production)
+        if production
+            Dir.mkdir('logs') unless File.exist?('logs')
+            @@logger = Logger.new('logs/common.log','weekly')
+        else
+            @@logger = Logger.new(STDOUT)
+        end
+    end
+
+    def self.info(x)
+        @@logger.info(x)
+    end
+
+    def self.error(x)
+        @@logger.error(x)
+    end
+
+    def self.logger
+        return @@logger
+    end
+end
+
 
 helpers do
     include Rack::Utils
@@ -121,6 +148,11 @@ configure do
     loadConfiguration()
     set :protection, :except => [:path_traversal]
     FlowControl::init
+    disable :logging
+    Clogger::init(settings.production?)
+    if (settings.production?)
+        use Rack::CommonLogger, Clogger::logger
+    end
 end
 
 use Rack::Superfeedr do |superfeedr|
@@ -138,6 +170,7 @@ use Rack::Superfeedr do |superfeedr|
                 websockets[feed_id].each {|feedsocket| feedsocket.send_data({:new_entry => entry.id}.to_json) if feedsocket} if websockets[feed_id]
             end
         else
+            feed = Feed.new(id: feed_id, user: nil)
             if notification["status"]["code"] != 0 &&
                 (Time.now - Time.at(notification["status"]["lastParse"])) > (60 * 60 * 24 * 20) &&
                 (Time.now - Time.at(feed.lastUpdated)) > (60 * 60 * 24 * 20)
@@ -145,10 +178,10 @@ use Rack::Superfeedr do |superfeedr|
                 # and for more than 20 days superfeedr was unable to parse this
                 # and our last internal update is older than 20 days
                 # then we unsubscribe, to reduce load
-                puts "unsubscribing #{feed_id}"
+                Clogger::info "automatic unsubscribing #{feed_id}"
                 Rack::Superfeedr.unsubscribe url, feed_id do |n|
-                    puts "unsubscribed feed"
-                    Feed.new(id: feed_id, user: nil).unsubscribe!
+                    Clogger::info "unsubscribed feed"
+                    feed.unsubscribe!
                 end
             end
         end
@@ -205,13 +238,13 @@ post '/unsubscribe' do
                 feed.unsubscribeUser!
                 if (feed.subscribers == 0) 
                     Rack::Superfeedr.unsubscribe(feed.url, id) do |n|
-                        puts "unsubscribed feed!"
+                        Clogger::info "unsubscribed feed!"
                         Feed.new(id: feed.id, user: nil).unsubscribe!
                     end
                 end
             end
         rescue => error
-            warn "unsubscribe: #{error}"
+            Clogger::error "unsubscribe: #{error}"
         end
     }
     redirect url '/#msgUnsubscribe'
@@ -223,6 +256,7 @@ post '/import' do
     opml = params[:file][:tempfile].read
     doc = Nokogiri::XML(opml)
     FlowControl::pool.process {
+        Clogger::info "starting import for #{authorized_email}"
         doc.xpath("/opml/body/outline").map do |first_level_outline|
             begin
                 if first_level_outline.attr("xmlUrl")
@@ -235,13 +269,13 @@ post '/import' do
                             begin
                                 subscribe(url: outline.attr("xmlUrl"), name: outline.attr("text"), user: authorized_email, category: first_level_outline.attr("text")) 
                             rescue Net::ReadTimeout
-                                warn "could not subscribe to #{outline.attr("xmlUrl")}"
+                                Clogger::error "could not subscribe to #{outline.attr("xmlUrl")}, timeout"
                             end
                         end
                     end
                 end
             rescue Net::ReadTimeout
-                warn "could not subscribe to #{outline.attr("xmlUrl")}"
+                Clogger::error "could not subscribe to #{outline.attr("xmlUrl")}, timeout"
             end
         end
         FlowControl::throttle.wait
@@ -257,12 +291,14 @@ end
 
 def subscribe(url:, name:, user:, category: nil)
     protected!
+    Clogger::info "start subscribing #{url} for #{user}"
     feed = Feed.new(url: url, name: name, user: user, category: category).save!
     if ! feed.subscribed?
         FlowControl::throttle.background(url) {
             Rack::Superfeedr.subscribe(feed.url, feed.id, {retrieve: true, format: 'json'}) do |body, success, response|
                 if success
                     feed.subscribed!
+                    Clogger::info "successfully subscribed #{url}"
                     begin
                         oldEntries = ::JSON.parse(body)
                         oldEntries['items'].each do |item|
@@ -271,13 +307,13 @@ def subscribe(url:, name:, user:, category: nil)
                             Entry.new(url: item["permalinkUrl"], title: item["title"], content: content, feed_id: feed.id, user: nil).save!
                         end
                     rescue => e
-                        warn "could not parse old entries after subscribing: #{e}"
+                        Clogger::error "could not parse old entries after subscribing: #{e}"
                     end
                     return feed
                 else
-                    warn "error subscribing"
-                    warn response
-                    warn body
+                    Clogger::error "error subscribing #{url}"
+                    Clogger::error response
+                    Clogger::error body
                 end
             end
         }
@@ -419,6 +455,7 @@ get '/' do
         erb :installer, :layout => false
     else
         protected!
+        Clogger::info "test"
         erb :index, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true, user: authorized_email), :current_feed_id => nil}
     end
 end
