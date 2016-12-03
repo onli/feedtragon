@@ -455,7 +455,6 @@ get '/' do
         erb :installer, :layout => false
     else
         protected!
-        Clogger::info "test"
         erb :index, :locals => {:feeds => Database.new.getFeeds(onlyUnread: true, user: authorized_email), :current_feed_id => nil}
     end
 end
