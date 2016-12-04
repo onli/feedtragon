@@ -463,9 +463,11 @@ summary {
     color: #f22f49 !important;
 }
 
-@keyframes fadein {
+@keyframes fadeinout {
    0% {opacity:0;}
-   100% {opacity:0.9;}
+   30% {opacity:0.9;}
+   90% {opacity:0.9;}
+   100% {opacity:0;}
 }
 
 .message {
@@ -486,8 +488,9 @@ summary {
 }
 
 .message:target {
-    animation: fadein 1s;
-    opacity: 0.9;
+    animation: fadeinout 7s;
+    animation-iteration-count: 1;
+    opacity: 0;
 }
 
 /* http://tobiasahlin.com/spinkit/ */
