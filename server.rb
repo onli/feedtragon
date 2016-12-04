@@ -236,11 +236,14 @@ post '/unsubscribe' do
             params["feeds"].each do |id, _|
                 feed = Feed.new(id: id, user: authorized_email)
                 feed.unsubscribeUser!
-                if (feed.subscribers == 0) 
-                    Rack::Superfeedr.unsubscribe(feed.url, id) do |n|
-                        Clogger::info "unsubscribed feed!"
-                        Feed.new(id: feed.id, user: nil).unsubscribe!
-                    end
+                Clogger::info "unsubscribed feed #{id} for #{authorized_email}"
+                if (feed.subscribers == 0)
+                    FlowControl::throttle.background(id) {
+                        Rack::Superfeedr.unsubscribe(feed.url, id) do |n|
+                            Clogger::info "unsubscribed feed #{id} at superfeedr!"
+                            Feed.new(id: feed.id, user: nil).unsubscribe!
+                        end
+                    }
                 end
             end
         rescue => error
