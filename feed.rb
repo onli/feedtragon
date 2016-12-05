@@ -11,7 +11,7 @@ class Feed
         self.user = user
         self.url = url
         self.id = id
-        self.category = category
+        self.category = category if category && ! category.strip.empty?
         name = url if name.nil?
         self.name = name
         if id && url.nil?
@@ -30,14 +30,14 @@ class Feed
         data = Database.new.getFeedData(id: id, user: self.user)
         self.url = data["url"]
         self.name = data["name"]
-        self.category = data["category"] if data["category"] && ! data["category"].empty?
+        self.category = data["category"] if data["category"] && ! data["category"].strip.empty?
     end
 
     def initializeByUrl(url:)
         data = Database.new.getFeedData(url: url, user: self.user)
         self.id = data["id"]
         self.name = data["name"]
-        self.category = data["category"] if data["category"] && ! data["category"].empty?
+        self.category = data["category"] if data["category"] && ! data["category"]..strip.empty?
     end
 
     def save!

@@ -445,7 +445,7 @@ class Database
         categories = []
         begin
             @@db.execute("SELECT DISTINCT category FROM users_feeds WHERE user = ?", user) do |row|
-                categories.push(row["category"]) if row["category"]
+                categories.push(row["category"]) if row["category"] && ! row["category"].strip.empty?
             end
          rescue => error
             warn "getCategories: #{error}"
