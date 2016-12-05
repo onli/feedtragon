@@ -2,7 +2,7 @@
     <h2>Unsubscribe</h2>
     <form method="POST" action="<%= url '/unsubscribe' %>">
     <ol id="unsubscribeList">
-    <% feeds&.select{|feed| feed.subscribed? }&.each do |feed|  %>
+    <% feeds&.each do |feed|  %>
         <label for="feeds[<%= feed.id.to_s %>]">
         <li>
             <input type="checkbox" id="feeds[<%= feed.id.to_s %>]" name="feeds[<%= feed.id.to_s %>]" />
