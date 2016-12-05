@@ -267,7 +267,7 @@ post '/import' do
                     subscribe(url: first_level_outline.attr("xmlUrl"), name: first_level_outline.attr("text"), user: authorized_email)
                 else
                     # it is a category
-                    first_level_outline.xpath("//outline").map do |outline|
+                    first_level_outline.children.each do |outline|
                         if outline.attr("xmlUrl") # because the xpath also selects the first_level_group itself
                             begin
                                 subscribe(url: outline.attr("xmlUrl"), name: outline.attr("text"), user: authorized_email, category: first_level_outline.attr("text")) 
