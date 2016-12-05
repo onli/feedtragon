@@ -30,14 +30,14 @@ class Feed
         data = Database.new.getFeedData(id: id, user: self.user)
         self.url = data["url"]
         self.name = data["name"]
-        self.category = data["category"]
+        self.category = data["category"] if data["category"] && ! data["category"].empty?
     end
 
     def initializeByUrl(url:)
         data = Database.new.getFeedData(url: url, user: self.user)
         self.id = data["id"]
         self.name = data["name"]
-        self.category = data["category"]
+        self.category = data["category"] if data["category"] && ! data["category"].empty?
     end
 
     def save!

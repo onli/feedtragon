@@ -267,10 +267,11 @@ post '/import' do
                     subscribe(url: first_level_outline.attr("xmlUrl"), name: first_level_outline.attr("text"), user: authorized_email)
                 else
                     # it is a category
+                    category = first_level_outline.attr("text")
                     first_level_outline.children.each do |outline|
                         if outline.attr("xmlUrl") # because the xpath also selects the first_level_group itself
                             begin
-                                subscribe(url: outline.attr("xmlUrl"), name: outline.attr("text"), user: authorized_email, category: first_level_outline.attr("text")) 
+                                subscribe(url: outline.attr("xmlUrl"), name: outline.attr("text"), user: authorized_email, category: category) 
                             rescue Net::ReadTimeout
                                 Clogger::error "could not subscribe to #{outline.attr("xmlUrl")}, timeout"
                             end
@@ -294,8 +295,8 @@ end
 
 def subscribe(url:, name:, user:, category: nil)
     protected!
-    Clogger::info "start subscribing #{url} for #{user}"
-    feed = Feed.new(url: url, name: name, user: user, category: category).save!
+    Clogger::info "start subscribing #{url} for #{user} under #{category}"
+    feed = Feed.new(url: url, name: name, category: category, user: user).save!
     if ! feed.subscribed?
         FlowControl::throttle.background(url) {
             Rack::Superfeedr.subscribe(feed.url, feed.id, {retrieve: true, format: 'json'}) do |body, success, response|
