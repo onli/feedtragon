@@ -296,7 +296,7 @@
     }
 
     function addSelectAllButton() {
-        var tagString = "<button type='button' id='toggleUnsubscribe'>all</button>";
+        var tagString = "<button type='button' class='button' id='toggleUnsubscribe'>all</button>";
         var range = document.createRange();
         var documentFragment = range.createContextualFragment(tagString);
         var unsubscribeForm = document.querySelector("#unsubscribeForm form")
