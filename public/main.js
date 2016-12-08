@@ -317,7 +317,7 @@
     }
 
     function addUserInputButton() {
-        var tagString = "<button type='button' id='addUserInput'>+</button>";
+        var tagString = "<button class='button' type='button' id='addUserInput'>+</button>";
         var range = document.createRange();
         var documentFragment = range.createContextualFragment(tagString);
         var userForm = document.querySelector("#userForm ol")
