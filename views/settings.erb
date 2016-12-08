@@ -10,6 +10,7 @@
     <%= erb :addForm %>
     <section id="exportForm" class="settingsForm">
         <h2>Export</h2>
+        <p>Export all your subscribed feeds into a OPML file, which other readers can import.</p>
         <form action="<%= url '/feeds.opml' %>" method="GET">
             <button class="button" type="submit">Export</button>
         </form>
