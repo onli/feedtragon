@@ -350,6 +350,9 @@ summary {
 
 #unsubscribeList {
     margin-left: 1em;
+    max-height: 800px;
+    overflow: auto;
+    max-width: 800px;
 }
 
 #unsubscribeSubmit {
