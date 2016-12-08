@@ -262,10 +262,9 @@ class Database
         end
     end
 
-    def getEntries(feed = nil, startId = nil, read = false, limit: 10, user:)
+    def getEntries(feed = nil, startId = 0, read = false, limit: 10, user:)
         begin
             entries = []
-            startId ||= 0
             if feed
                 # LEFT OUTER join + users_entries.read: Show only those entries not marked read specifically for this user (0 or NULL)
                 @@db.execute("SELECT url, title, content, id, date FROM entries LEFT OUTER JOIN users_entries ON (users_entries.entry = entries.id) WHERE feed = ? AND (users_entries.read = 0 OR users_entries.read IS NULL) AND id > ? LIMIT #{limit};", feed.id.to_i, startId.to_i) do |row|

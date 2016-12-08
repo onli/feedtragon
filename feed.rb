@@ -37,7 +37,7 @@ class Feed
         data = Database.new.getFeedData(url: url, user: self.user)
         self.id = data["id"]
         self.name = data["name"]
-        self.category = data["category"] if data["category"] && ! data["category"]..strip.empty?
+        self.category = data["category"] if data["category"] && ! data["category"].strip.empty?
     end
 
     def save!
@@ -89,5 +89,9 @@ class Feed
         rescue
             return 0
         end
+    end
+
+    def read!(startId: nil)
+        self.entries(startId: startId, limit: 100000).each {|entry| entry.read! }
     end
 end

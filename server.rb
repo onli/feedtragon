@@ -350,7 +350,7 @@ end
 
 post '/readall' do
     protected!
-    params[:ids].each {|id| Entry.new(id: id, user: authorized_email).read!} if params[:ids]
+    Feed.new(id: params[:feed_id], user: authorized_email).read!(startId: (params[:start_id].to_i - 1)) if params[:start_id]
     Database.new.readall(user: authorized_email) if params[:all]
     redirect url '/'
 end
