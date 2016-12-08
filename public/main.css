@@ -451,11 +451,17 @@ summary {
     box-shadow: 3px 3px 5px 0px #996E6E;
     margin: 0;
     padding: 0.3em;
+    border-right: 3px solid #f22f49;
+    border-bottom: 3px solid #f22f49;
+    text-align: center;
 }
 
 #settingsNav li.current {
     color: #717171;
-    box-shadow: 2px 2px 5px 0px #996E6E;
+    box-shadow: 3px 3px 2px 0px #BEACAC;
+    border: 1px solid #f22f49;
+    position: relative;
+    top: 1px;
 }
 
 #settingsNav a {
