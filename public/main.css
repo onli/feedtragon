@@ -60,7 +60,6 @@ summary {
 /* specifics */
 
 #login, #index {
-    max-width: 40em;
     margin: auto;
     padding-left: 20%;
     text-align: left;
@@ -68,6 +67,11 @@ summary {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
+}
+
+#index footer {
+    font-size: 0.9em;
+    margin-top: 2em;
 }
 
 #login {
@@ -88,6 +92,51 @@ summary {
     font-weight: 400;
     display: inline-block;
     vertical-align: top;
+}
+
+#shortcuts {
+    display: none;
+    border: 3px solid grey;
+    border-radius: 5px;
+    text-align: right;
+    padding-right: 0.5em;
+}
+
+#shortcuts:target {
+    display: inline-block;
+    position: absolute;
+}
+
+
+#shortcuts dl {
+    text-align: left;
+    width: 100%;
+}
+
+#shortcuts dt, #shortcuts dd {
+    width: 49%;
+    display: inline-block;
+    margin-left: 0;
+}
+
+#shortcuts dt {
+    text-align: center;
+    vertical-align: top;
+}
+
+
+#shortcuts span {
+    text-transform: capitalize;
+    font-family: monospace;
+    background: #f0f0f0;
+    border-color: #e0e0e0;
+    border-style: solid;
+    border-width: 1px 1px 3px 1px;
+    border-bottom-color: #dbdbdb;
+    border-radius: 5px;
+    text-shadow: 1px 1px #fff;
+    line-height: 1.5;
+    padding: 0.2em;
 }
 
 #feeds {
@@ -433,6 +482,9 @@ summary {
         position: fixed;
         top: 0.1em;
         right: 1em;
+    }
+    #index footer {
+        display: none;
     }
     @media (max-width: 530px) {
         #readFeed {
