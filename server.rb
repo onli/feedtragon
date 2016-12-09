@@ -18,8 +18,6 @@ require 'throttle-queue'
 include ERB::Util
 set :static_cache_control, [:public, max_age: 31536000]
 register Sinatra::Hijacker
-# disable path_traversal for greader api, remote token for persona behind nginx proxy
-use Rack::Protection, except: [:path_traversal, :remote_token]
 
 websockets = []
 class FlowControl
@@ -146,7 +144,9 @@ end
 
 configure do
     loadConfiguration()
-    set :protection, :except => [:path_traversal]
+    # disable path_traversal for greader api, remote token for persona behind nginx proxy, http origin for webkit browsers and portier
+    set :protection, except: [:path_traversal, :remote_token, :http_origin]
+
     FlowControl::init
     disable :logging
     Clogger::init(settings.production?)
