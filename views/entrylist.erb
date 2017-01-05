@@ -1,6 +1,6 @@
 <main id="entries" data-feedid="<%= current_feed_id %>">
     <form id="readall" method="POST" action="<%= url '/readall' %>">
-        <input type="hidden" name="start_id" value="<%= entries&.first.id %>" />
+        <input type="hidden" name="start_id" value="<%= entries&.first&.id %>" />
         <input type="hidden" name="feed_id" value="<%= current_feed_id %>" />
         <button id="readFeed" class="button button-rounded" type="submit" title="Mark all as read">&#10003;</button>
     </form>
