@@ -281,8 +281,8 @@
     function ajaxifyForm(selector, callback) {
         document.querySelectorAll(selector).forEach(function(el) {
             el.addEventListener('submit', function(evt) {
-               evt.preventDefault();
-               var http = new XMLHttpRequest();
+                evt.preventDefault();
+                var http = new XMLHttpRequest();
                 
                 http.onreadystatechange = function() {
                     if (http.readyState == 4 && http.status == 200) {
@@ -373,7 +373,10 @@
 
     var contentLoaded = false;
     document.addEventListener('DOMContentLoaded', function() {
-        var contentLoaded = true;
+        if (contentLoaded) {
+            return;
+        }
+        contentLoaded = true;
         n.Entry.checkRead(true);
         n.Feed.getUpdates();
         var main = document.querySelector('main');

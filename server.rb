@@ -338,8 +338,11 @@ end
 
 post %r{/([0-9]+)/mark} do |id|
     protected!
-    Entry.new(id: id, user: authorized_email).mark!
-    return id
+    if Entry.new(id: id, user: authorized_email).mark!
+        return id
+    else
+        return false
+    end
 end
 
 post %r{/([0-9]+)/unmark} do |id|

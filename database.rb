@@ -237,12 +237,15 @@ class Database
         begin
             if status
                 @@db.execute("INSERT OR IGNORE INTO markers(entry, user) VALUES (?, ?)", entry.id.to_i, entry.user)
+                return true
             else
                 @@db.execute("DELETE FROM markers WHERE entry == ? AND user == ?", entry.id.to_i, entry.user)
+                return true
             end
         rescue => error
             warn "setMark: #{error}"
         end
+        return false
     end
 
     # Not user specific
