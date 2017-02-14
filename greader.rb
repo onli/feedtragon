@@ -96,8 +96,7 @@ end
 
 get '/reader/api/0/unread-count' do
     if ((user = apiAccess!); user)
-        feeds = Database.new.getFeeds(onlyUnread: true, user: user)
-        total = feeds.inject(0){|sum, feed| sum + feed.entries.size}
+        feeds, total = Database.new.getUnreadEntriesCount(user: user)
         erb :readerUnread, :layout => false, :locals => {:output => params["output"], :feeds => feeds, :total => total}
     end
 end

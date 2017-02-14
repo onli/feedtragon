@@ -122,6 +122,14 @@ helpers do
         end
         return false
     end
+    
+    # returns user email as string if access is granted, false otherwise
+    def ttApiAccess!(token = nil)
+        if token
+            return Database.new.getUserByToken(token)
+        end
+        return false
+    end
 end
 
 def loadConfiguration()
@@ -191,6 +199,7 @@ end
 ## bazqux flavored reader api ##
 
 require './greader.rb'
+require './ttrss.rb'
 
 ## feedtragon web ##
 

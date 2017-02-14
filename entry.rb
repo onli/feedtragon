@@ -61,6 +61,11 @@ class Entry
         Database.new.setRead(false, self)
     end
 
+    # This gets the feed from the database. Minimize usage, use feed_id wherever possible
+    def feed
+        Feed.new(id: feed_id, user: user)
+    end
+
     # see http://stackoverflow.com/a/15910738/2508518
     # we are guessing here that relative links can be transformed to absolute urls
     # using the adress of the blog itself. This might fail.

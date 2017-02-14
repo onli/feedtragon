@@ -325,7 +325,7 @@ class Database
 
     def read?(entry)
         begin
-            return @@db.execute("SELECT id FROM users_entries WHERE id == ? AND read = 1 AND user == ?", entry.id.to_i, entry.user)[0] != nil
+            return @@db.execute("SELECT entry FROM users_entries WHERE entry == ? AND read = 1 AND user == ?", entry.id.to_i, entry.user)[0] != nil
         rescue => error
             warn "read?: #{error}"
         end
@@ -501,5 +501,10 @@ class Database
          rescue => error
             warn "unsubscribeUser: #{error}"
         end
+    end
+
+    def getUnreadEntriesCount(user: user)
+        feeds = self.getFeeds(onlyUnread: true, user: user)
+        return feeds, feeds.inject(0){|sum, feed| sum + feed.entries.size}
     end
 end
