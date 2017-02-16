@@ -56,7 +56,15 @@ post '/ttr/api/' do
         when "updateArticle"
             # TODO; Support marking articles
             ttParams["article_ids"].split(',').each do |id|
-                if (ttParams["field"].to_i == 2)
+                case ttParams["field"].to_i
+                when 0
+                    entry = Entry.new(id: id, user: user)
+                    case ttParams["mode"].to_i
+                    when 0 then entry.unmark!
+                    when 1 then entry.mark!
+                    when 2 then entry.marked? ? entry.unmark! : entry.mark!
+                    end
+                when 2
                     entry = Entry.new(id: id, user: user)
                     case ttParams["mode"].to_i
                     when 0 then entry.read!
