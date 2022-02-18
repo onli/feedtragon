@@ -1,3 +1,5 @@
+*Please note: Because of the superfeedr pricing change and less available time I gave up on this project. Still think it's a nice example for this kind of software, but there are actively developed alternatives one should rather use. This repo will be archived.*
+
 **feedtragón** is a small self-hosted RSS-reader. Instead of polling feeds on its own, it is using [superfeedr](https://superfeedr.com) to get updates of subscribed feeds.
 
 ![feedtragon screenshot](https://www.onli-blogging.de/uploads/feedtragon_screenshot_tiny.png)
